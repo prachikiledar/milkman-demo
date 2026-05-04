@@ -66,10 +66,9 @@ type PlainDelivery = {
   _id: string;
   customerId: string;
   date: Date | string;
-  quantityDelivered: number;
-  baseQuantity?: number;
+  defaultQuantity: number;
+  actualQuantity: number;
   extraQuantity?: number;
-  finalQuantity?: number;
   status: "DELIVERED" | "SKIPPED" | "PAUSED";
   note?: string;
 };
@@ -597,11 +596,12 @@ export async function getDeliveryRunData(options?: {
     const delivery = deliveryByCustomer.get(customerKey);
     const exception = exceptionByCustomer.get(customerKey);
     const planQuantity = entry.activePlan?.quantityLiters || 0;
+    const defaultQuantity = delivery?.defaultQuantity ?? planQuantity;
     const status: Exclude<DeliveryRunStatus, "ALL"> =
       delivery?.status ||
       (exception?.type === "PAUSE" ? "PAUSED" : exception?.type === "SKIP" ? "SKIPPED" : "PENDING");
-    const finalQuantity =
-      delivery?.finalQuantity ?? delivery?.quantityDelivered ?? (status === "DELIVERED" ? planQuantity : 0);
+    const actualQuantity =
+      delivery?.actualQuantity ?? (status === "DELIVERED" ? planQuantity : 0);
 
     return {
       customerCode: entry.profile.customerCode,
@@ -612,9 +612,9 @@ export async function getDeliveryRunData(options?: {
       route: entry.profile.areaName,
       areaCode: entry.profile.areaCode,
       dueAmount: entry.totals.dueAmount,
-      baseQuantity: planQuantity,
-      extraQuantity: delivery?.extraQuantity || 0,
-      finalQuantity,
+      defaultQuantity,
+      extraQuantity: delivery?.extraQuantity || actualQuantity - defaultQuantity,
+      actualQuantity,
       productItems: [],
     };
   });
@@ -828,7 +828,7 @@ export async function getCustomerMonthlyCalendar(customerCode: string, month: nu
       dayOfMonth: dayNum,
       weekdayLabel: new Intl.DateTimeFormat("en-IN", { weekday: "short" }).format(dayDate),
       status,
-      liters: delivery ? delivery.quantityDelivered : (exception ? 0 : activePlan?.quantityLiters ?? 0),
+      liters: delivery ? delivery.actualQuantity : (exception ? 0 : activePlan?.quantityLiters ?? 0),
       isFuture: dayDate.getTime() > Date.now(),
     };
   });

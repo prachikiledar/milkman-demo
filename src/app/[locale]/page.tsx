@@ -37,13 +37,12 @@ export default async function LocaleHomePage({ params }: LocaleHomePageProps) {
 
           {/* Right Image */}
           <div className="hero-image-container flex items-center justify-center">
-            <Image
+            <img
               src="/milk1.png"
               alt="Fresh Premium Milk"
               width={350}
               height={350}
               className="floating-image"
-              priority
             />
           </div>
         </div>
