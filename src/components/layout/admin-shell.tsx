@@ -15,12 +15,11 @@ import {
   Menu,
   NotebookText,
   Package2,
+  Plus,
   ShoppingCart,
   Store,
   Users,
   X,
-  LogOut,
-  Search
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
@@ -50,11 +49,10 @@ type NavItem = {
   href: NavKey | "reports/area-insights";
   icon: typeof Home;
   labelKey?: string;
-  isLive?: boolean;
 };
 
 const navItems: NavItem[] = [
-  { href: "dashboard", icon: Home, isLive: true },
+  { href: "dashboard", icon: Home },
   { href: "vendors", icon: Store },
   { href: "customers", icon: Users },
   { href: "deliveries", icon: Droplets },
@@ -79,7 +77,7 @@ export function AdminShell({
   const tShell = useTranslations("admin.shell");
   const tNav = useTranslations("admin.nav");
 
-  const renderNavItem = ({ href, icon: Icon, labelKey, isLive }: NavItem) => {
+  const renderNavItem = ({ href, icon: Icon, labelKey }: NavItem) => {
     const target = `/${locale}/admin/${href}`;
     const isActive = pathname === target || pathname.startsWith(`${target}/`);
     const label = labelKey ? tNav(labelKey) : tNav(href);
@@ -89,113 +87,180 @@ export function AdminShell({
         key={href}
         href={target}
         onClick={() => setIsDrawerOpen(false)}
-        className={cn(
-          "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group",
-          isActive
-            ? "bg-white shadow-sm border border-gray-100 text-[#064e3b]"
-            : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
-        )}
+        className={cn("admin-nav-item", isActive && "admin-nav-item-active")}
       >
-        <Icon className={cn("h-4 w-4 shrink-0 transition-colors", isActive ? "text-[#22c55e]" : "text-gray-400 group-hover:text-gray-600")} strokeWidth={2.5} />
-        <span className="flex-1 text-sm font-bold tracking-tight">{label}</span>
-        {isLive && (
-          <span className="text-[9px] font-black bg-green-50 text-[#22c55e] px-1.5 py-0.5 rounded-md">LIVE</span>
-        )}
+        <Icon className="h-4 w-4 shrink-0" />
+        <span className="flex-1 text-sm font-medium">{label}</span>
+        <ChevronRight className="h-4 w-4 shrink-0 opacity-60" />
       </Link>
     );
   };
 
   return (
-    <div className="min-h-screen bg-[#F3F4F6] flex font-sans">
-
-      {/* DESKTOP SIDEBAR */}
-      <aside className="w-[280px] bg-white border-r border-gray-200/60 hidden lg:flex flex-col h-screen sticky top-0 p-6">
-        <div className="flex items-center gap-3 mb-10 px-2">
-          <div className="w-10 h-10 bg-[#064e3b] rounded-xl flex items-center justify-center shadow-lg shadow-green-900/20 text-white">
-            <Droplets size={20} />
-          </div>
-          <div>
-            <h1 className="text-xl font-black tracking-tighter text-gray-900 leading-none">Dairly</h1>
-            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{tShell("brand")}</span>
-          </div>
-        </div>
-
-        <nav className="flex-1 space-y-1 overflow-y-auto pr-2 custom-scrollbar">
-          <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4 px-3">Main Navigation</p>
-          {navItems.map(renderNavItem)}
-        </nav>
-
-        <div className="mt-auto pt-6 space-y-4">
-          <div className="bg-[#064e3b] rounded-[24px] p-5 text-white relative overflow-hidden group">
-            <p className="text-[10px] font-bold text-green-300/80 mb-3 relative z-10">{tShell("helpDescription")}</p>
-            <button className="bg-white text-[#064e3b] text-[11px] font-black px-4 py-2 rounded-lg relative z-10 hover:bg-green-50 transition-colors">
-              {tShell("helpTitle")}
-            </button>
-            <div className="absolute -right-4 -bottom-4 w-20 h-28 bg-white/10 rounded-t-lg rotate-12" />
-          </div>
-        </div>
-      </aside>
-
-      {/* MOBILE DRAWER */}
-      <div className={cn("fixed inset-0 z-40 bg-[#064e3b]/40 backdrop-blur-sm lg:hidden transition-opacity", isDrawerOpen ? "opacity-100" : "pointer-events-none opacity-0")} onClick={() => setIsDrawerOpen(false)} />
-      <aside className={cn("fixed left-0 top-0 z-50 h-full w-[300px] bg-white p-6 transition-transform lg:hidden", isDrawerOpen ? "translate-x-0" : "-translate-x-full")}>
-        <div className="flex items-center justify-between mb-8">
-          <span className="font-black tracking-tighter text-xl">Dairly</span>
-          <button onClick={() => setIsDrawerOpen(false)} className="p-2"><X size={20} /></button>
-        </div>
-        <nav className="space-y-1">{navItems.map(renderNavItem)}</nav>
-      </aside>
-
-      {/* MAIN CONTENT AREA */}
-      <div className="flex-1 flex flex-col min-w-0">
-
-        {/* HEADER */}
-        <header className="h-16 sm:h-20 bg-white border-b border-gray-200/50 flex items-center justify-between px-4 sm:px-8 sticky top-0 z-30">
-          <div className="flex items-center gap-4 flex-1">
-            <button onClick={() => setIsDrawerOpen(true)} className="lg:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg"><Menu /></button>
-            <div className="hidden md:flex items-center gap-3 bg-[#F9FAFB] border border-gray-200 rounded-xl px-4 py-2 w-full max-w-md group focus-within:border-green-500 transition-all">
-              <Search size={16} className="text-gray-400" />
-              <input type="text" placeholder="Search..." className="bg-transparent border-none outline-none text-sm w-full" />
+    <div className="admin-theme">
+      <div className="mx-auto flex min-h-screen max-w-[1440px] gap-4 px-3 py-3 sm:px-4 lg:px-5">
+        <aside className="admin-panel sticky top-[76px] hidden h-[calc(100vh-1.5rem-64px)] w-[296px] shrink-0 rounded-[32px] p-5 lg:flex lg:flex-col overflow-y-auto">
+          <div className="flex items-center gap-3 px-1">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--admin-primary-soft)] text-[var(--admin-primary-strong)]">
+              <Droplets className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-[13px] font-semibold uppercase tracking-[0.24em] text-[var(--admin-muted)]">
+                {tShell("brand")}
+              </p>
+              <p className="mt-1 text-xl font-semibold text-[var(--admin-text)]">
+                {tShell("panelTitle")}
+              </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <button className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 border border-gray-100 text-gray-500 relative hover:bg-gray-100 transition-colors">
-              <Bell size={20} />
-              <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
-            </button>
-            <div className="flex items-center gap-3 pl-2 border-l border-gray-200">
-              <div className="text-right hidden sm:block">
-                <p className="text-xs font-bold text-gray-900">Admin Panel</p>
-                <p className="text-[10px] text-gray-400 font-medium">admin@dairly.in</p>
+          <div className="admin-panel-muted mt-6 rounded-[24px] p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--admin-muted)]">
+              {tShell("workspace")}
+            </p>
+            <p className="mt-2 text-base font-semibold">{tShell("workspaceTitle")}</p>
+            <p className="mt-1 text-sm leading-6 text-[var(--admin-muted)]">
+              {tShell("workspaceDescription")}
+            </p>
+          </div>
+
+          <nav className="mt-6 space-y-2">{navItems.map(renderNavItem)}</nav>
+
+          <div className="admin-divider my-6" />
+
+          <div className="admin-panel-muted rounded-[24px] p-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--admin-primary-soft)] text-[var(--admin-primary-strong)]">
+                <NotebookText className="h-5 w-5" />
               </div>
-              <div className="w-10 h-10 rounded-full bg-green-100 border border-green-200 flex items-center justify-center font-bold text-[#064e3b] text-xs">
-                AD
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--admin-muted)]">
+                  {tShell("helpLabel")}
+                </p>
+                <p className="text-sm font-semibold">{tShell("helpTitle")}</p>
               </div>
-              <button 
-                title="Logout"
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-400 hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition-all ml-1"
+            </div>
+            <p className="mt-3 text-sm leading-6 text-[var(--admin-muted)]">
+              {tShell("helpDescription")}
+            </p>
+          </div>
+        </aside>
+
+        <div
+          className={cn(
+            "fixed inset-0 z-40 bg-[#12213c]/28 transition duration-200 lg:hidden",
+            isDrawerOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0",
+          )}
+          onClick={() => setIsDrawerOpen(false)}
+        />
+
+        <aside
+          className={cn(
+            "fixed left-0 top-[64px] z-50 h-[calc(100vh-64px)] w-[308px] max-w-[86vw] p-3 transition-transform duration-200 lg:hidden",
+            isDrawerOpen ? "translate-x-0" : "-translate-x-full",
+          )}
+        >
+          <div className="admin-panel flex h-full flex-col rounded-[32px] p-5 overflow-y-auto">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--admin-primary-soft)] text-[var(--admin-primary-strong)]">
+                  <Droplets className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-[13px] font-semibold uppercase tracking-[0.2em] text-[var(--admin-muted)]">
+                    {tShell("brand")}
+                  </p>
+                  <p className="text-lg font-semibold">{tShell("mobileTitle")}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsDrawerOpen(false)}
+                className="admin-icon-button h-11 w-11"
+                aria-label={tShell("closeMenu")}
               >
-                <LogOut size={18} />
+                <X className="h-5 w-5" />
               </button>
             </div>
-          </div>
-        </header>
 
-        {/* DASHBOARD PAGE WRAPPER */}
-        <main className="p-4 sm:p-8 overflow-y-auto">
-          <div className="max-w-[1400px] mx-auto">
-            <div className="mb-10">
-              <h1 className="text-3xl font-black tracking-tight text-gray-900 mb-2">{title}</h1>
-              <p className="text-gray-500 font-medium text-sm">{subtitle}</p>
+            <div className="admin-panel-muted mt-5 rounded-[24px] p-4">
+              <p className="text-sm font-medium text-[var(--admin-muted)]">
+                {tShell("activeRoute")}
+              </p>
+              <p className="mt-1 text-base font-semibold">
+                {tShell("customersThisCycle", { count: 128 })}
+              </p>
             </div>
 
-            {/* Page contents (Children) render here against the gray background */}
-            <div className="relative z-10">
-              {children}
-            </div>
+            <nav className="mt-5 space-y-2">{navItems.map(renderNavItem)}</nav>
           </div>
-        </main>
+        </aside>
+
+        <div className="min-w-0 flex-1">
+          <header className="sticky top-[76px] z-30 mb-4">
+            <div className="admin-panel rounded-[30px] px-4 py-3 sm:px-5">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsDrawerOpen(true)}
+                    className="admin-icon-button h-11 w-11 lg:hidden"
+                    aria-label={tShell("openMenu")}
+                  >
+                    <Menu className="h-5 w-5" />
+                  </button>
+                  <div className="min-w-0">
+                    <p className="truncate text-[13px] font-semibold uppercase tracking-[0.2em] text-[var(--admin-muted)]">
+                      {tShell("workspaceEyebrow")}
+                    </p>
+                    <p className="truncate text-lg font-semibold text-[var(--admin-text)] sm:text-xl">
+                      {title}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    className="admin-icon-button h-11 w-11"
+                    aria-label={tShell("notifications")}
+                  >
+                    <Bell className="h-5 w-5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <main className="space-y-4 pb-4">
+            {!hideHero && (
+              <section className="admin-panel rounded-[32px] px-5 py-5 sm:px-6">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--admin-muted)]">
+                      {tShell("heroEyebrow")}
+                    </p>
+                    <h1 className="mt-2 text-2xl font-semibold tracking-tight text-[var(--admin-text)] sm:text-3xl">
+                      {title}
+                    </h1>
+                    <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--admin-muted)] sm:text-[15px]">
+                      {subtitle}
+                    </p>
+                  </div>
+                  <div className="admin-panel-muted rounded-[22px] px-4 py-3 text-sm text-[var(--admin-muted)]">
+                    <span className="font-semibold text-[var(--admin-text)]">
+                      {tShell("liveMode")}
+                    </span>
+                    <span className="mx-2 text-[var(--admin-border)]">•</span>
+                    <span>{tShell("superAdminPreview")}</span>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {children}
+          </main>
+        </div>
       </div>
     </div>
   );

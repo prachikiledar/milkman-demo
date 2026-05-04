@@ -52,7 +52,17 @@
     "password": "ਪਾਸਵਰਡ",
     "passwordPlaceholder": "ਪਾਸਵਰਡ ਦਰਜ ਕਰੋ",
     "submit": "ਲੌਗਇਨ",
-    "forgot": "ਪਾਸਵਰਡ ਭੁੱਲ ਗਏ?"
+    "forgot": "ਪਾਸਵਰਡ ਭੁੱਲ ਗਏ?",
+    "sendOtp": "OTP ਭੇਜੋ",
+    "verifyOtp": "OTP ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ",
+    "otp": "OTP ਦਰਜ ਕਰੋ",
+    "otpPlaceholder": "6-ਅੰਕਾਂ ਵਾਲਾ OTP",
+    "resendOtp": "OTP ਦੁਬਾਰਾ ਭੇਜੋ",
+    "sending": "OTP ਭੇਜ ਰਹੇ ਹਾਂ...",
+    "verifying": "ਪੁਸ਼ਟੀ ਕਰ ਰਹੇ ਹਾਂ...",
+    "invalidOtp": "ਗਲਤ OTP",
+    "expiredOtp": "OTP ਦੀ ਮਿਆਦ ਖਤਮ",
+    "success": "ਲੌਗਇਨ ਸਫਲ"
   },
   "home": {
     "hero": {
@@ -213,7 +223,8 @@
       "reports": "ਰਿਪੋਰਟਾਂ",
       "purchases": "ਖਰੀਦਦਾਰੀ",
       "areas": "ਏਰੀਆ",
-      "products": "ਉਤਪਾਦ"
+      "products": "ਉਤਪਾਦ",
+      "areaInsights": "ਏਰੀਆ ਇਨਸਾਈਟਸ"
     },
     "dashboard": {
       "title": "ਐਡਮਿਨ ਡੈਸ਼ਬੋਰਡ",

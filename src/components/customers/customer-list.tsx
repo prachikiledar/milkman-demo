@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { CustomerListItem } from "./customer-list-item";
 import { CustomerDetailModal } from "./customer-detail-modal";
+import { CustomerCalendarModal } from "./customer-calendar-modal";
 
 type CustomerListProps = {
   customers: any[];
@@ -20,8 +21,9 @@ export function CustomerList({ customers, areas, locale }: CustomerListProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState("ALL");
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
-  const [modalMode, setModalMode] = useState<'view' | 'details' | 'edit' | 'schedule'>('view');
+  const [modalMode, setModalMode] = useState<'view' | 'details' | 'edit' | 'schedule' | 'calendar'>('view');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   // SEARCH & FILTER LOGIC[cite: 1]
@@ -39,8 +41,12 @@ export function CustomerList({ customers, areas, locale }: CustomerListProps) {
 
   const handleViewCustomer = (customer: any, mode: any = 'view') => {
     setSelectedCustomer(customer);
-    setModalMode(mode);
-    setIsModalOpen(true);
+    if (mode === 'calendar') {
+      setIsCalendarOpen(true);
+    } else {
+      setModalMode(mode);
+      setIsModalOpen(true);
+    }
   };
 
   return (
@@ -113,7 +119,13 @@ export function CustomerList({ customers, areas, locale }: CustomerListProps) {
         customer={selectedCustomer}
         areas={areas}
         locale={locale}
-        mode={modalMode}
+        mode={modalMode as any}
+      />
+
+      <CustomerCalendarModal
+        isOpen={isCalendarOpen}
+        onClose={() => setIsCalendarOpen(false)}
+        customer={selectedCustomer}
       />
     </div>
   );
