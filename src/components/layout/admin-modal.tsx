@@ -41,7 +41,7 @@ export function AdminModal({ isOpen, onClose, title, children, footer }: AdminMo
             <X className="h-5 w-5" />
           </button>
         </div>
-        <div className="max-h-[70vh] overflow-y-auto px-6 py-6 bg-white">{children}</div>
+        <div className="max-h-[85vh] overflow-y-auto px-6 py-6 bg-white">{children}</div>
         {footer ? (
           <div className="border-t border-[var(--admin-border)] px-6 py-4 bg-gray-50">{footer}</div>
         ) : null}

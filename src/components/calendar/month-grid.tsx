@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from "@/lib/utils";
 import type { CalendarDayRecord } from "@/lib/calendar";
 
@@ -16,6 +18,11 @@ type MonthGridProps = {
   /** Optional translated labels for the built-in legend. */
   legendLabels?: { delivered: string; paused: string; skipped: string };
   onDateClick?: (dateKey: string) => void;
+  /**
+   * When true, renders a clean minimalist grid with only date numbers and status colors.
+   * Ideal for mobile-friendly modals.
+   */
+  isMinimal?: boolean;
 };
 
 const weekLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -37,6 +44,7 @@ export function MonthGrid({
   showLegend = true,
   legendLabels,
   onDateClick,
+  isMinimal = false,
 }: MonthGridProps) {
   const labels = legendLabels ?? {
     delivered: "Delivered",
@@ -44,35 +52,44 @@ export function MonthGrid({
     skipped: "Skipped",
   };
 
-  const today = new Date().toISOString().slice(0, 10);
+  const todayObj = new Date();
+  const today = `${todayObj.getFullYear()}-${String(todayObj.getMonth() + 1).padStart(2, '0')}-${String(todayObj.getDate()).padStart(2, '0')}`;
 
   return (
-    <div className="space-y-3 sm:space-y-4">
-      <div className="flex items-center justify-between gap-3">
-        <h2
-          className={cn(
-            "text-base font-semibold sm:text-lg",
-            variant === "admin" ? "text-[var(--admin-text)]" : "text-[var(--ink-900)]",
-          )}
-        >
-          {monthLabel}
-        </h2>
-        {showLegend ? (
-          <div className="hidden flex-wrap gap-2 sm:flex">
-            <span className="chip mint"><span className="status-dot mint" />{labels.delivered}</span>
-            <span className="chip sun"><span className="status-dot sun" />{labels.paused}</span>
-            <span className="chip rose"><span className="status-dot rose" />{labels.skipped}</span>
-          </div>
-        ) : null}
-      </div>
+    <div className={cn("space-y-3 sm:space-y-4", isMinimal && "flex flex-col items-center")}>
+      {!isMinimal && (
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h2
+            className={cn(
+              "text-base font-black sm:text-lg",
+              variant === "admin" ? "text-[var(--admin-text)]" : "text-[var(--ink-900)]",
+            )}
+          >
+            {monthLabel}
+          </h2>
+          {showLegend ? (
+            <div className="flex flex-wrap gap-2">
+              <span className="chip mint"><span className="status-dot mint" />{labels.delivered}</span>
+              <span className="chip sun"><span className="status-dot sun" />{labels.paused}</span>
+              <span className="chip rose"><span className="status-dot rose" />{labels.skipped}</span>
+            </div>
+          ) : null}
+        </div>
+      )}
 
-      <div className="grid grid-cols-7 gap-1.5 text-center text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--ink-300)] sm:gap-2 sm:text-[11px]">
+      <div className={cn(
+        "grid grid-cols-7 gap-1 text-center text-[10px] font-black uppercase tracking-tight text-[var(--ink-300)] sm:gap-2 sm:text-[11px] sm:tracking-widest",
+        isMinimal && "w-full max-w-[400px] gap-1 sm:gap-2"
+      )}>
         {weekLabels.map((label) => (
-          <div key={label} className="py-1">{label.slice(0, variant === "admin" ? 3 : 1)}</div>
+          <div key={label} className="py-1">{label.slice(0, 3)}</div>
         ))}
       </div>
 
-      <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
+      <div className={cn(
+        "grid grid-cols-7 gap-1 sm:gap-2",
+        isMinimal && "w-full max-w-[400px] gap-1 sm:gap-2 place-items-center mx-auto"
+      )}>
         {Array.from({ length: leadingBlankSlots }).map((_, index) => (
           <div key={`blank-${index}`} aria-hidden="true" />
         ))}
@@ -81,6 +98,24 @@ export function MonthGrid({
           const isFuture = day.isFuture;
           const isToday = day.dateKey === today;
           const tone = getToneClass(day);
+
+          if (isMinimal) {
+            return (
+              <article
+                key={day.dateKey}
+                onClick={() => !isFuture && onDateClick?.(day.dateKey)}
+                className={cn(
+                  "month-grid-cell is-minimal",
+                  tone,
+                  isFuture && "is-future",
+                  isToday && "is-today",
+                  !isFuture && onDateClick && "is-clickable",
+                )}
+              >
+                {day.dayOfMonth}
+              </article>
+            );
+          }
 
           return (
             <article
@@ -95,9 +130,16 @@ export function MonthGrid({
               )}
             >
               <div className="flex items-start justify-between">
-                <span className="day-number">{day.dayOfMonth}</span>
+                <div className="flex flex-col">
+                  <span className="day-number">{day.dayOfMonth}</span>
+                  <span className="text-[10px] font-bold uppercase text-[var(--ink-300)] leading-none mt-0.5">
+                    {day.weekdayLabel}
+                  </span>
+                </div>
                 {isToday ? (
                   <span className="day-meta">Today</span>
+                ) : isFuture ? (
+                  <span className="day-meta upcoming">Upcoming</span>
                 ) : null}
               </div>
 

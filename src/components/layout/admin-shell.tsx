@@ -99,7 +99,7 @@ export function AdminShell({
   return (
     <div className="admin-theme">
       <div className="mx-auto flex min-h-screen max-w-[1440px] gap-4 px-3 py-3 sm:px-4 lg:px-5">
-        <aside className="admin-panel sticky top-3 hidden h-[calc(100vh-1.5rem)] w-[296px] shrink-0 rounded-[32px] p-5 lg:flex lg:flex-col">
+        <aside className="admin-panel sticky top-[76px] hidden h-[calc(100vh-1.5rem-64px)] w-[296px] shrink-0 rounded-[32px] p-5 lg:flex lg:flex-col overflow-y-auto">
           <div className="flex items-center gap-3 px-1">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--admin-primary-soft)] text-[var(--admin-primary-strong)]">
               <Droplets className="h-5 w-5" />
@@ -156,11 +156,11 @@ export function AdminShell({
 
         <aside
           className={cn(
-            "fixed left-0 top-0 z-50 h-full w-[308px] max-w-[86vw] p-3 transition-transform duration-200 lg:hidden",
+            "fixed left-0 top-[64px] z-50 h-[calc(100vh-64px)] w-[308px] max-w-[86vw] p-3 transition-transform duration-200 lg:hidden",
             isDrawerOpen ? "translate-x-0" : "-translate-x-full",
           )}
         >
-          <div className="admin-panel flex h-full flex-col rounded-[32px] p-5">
+          <div className="admin-panel flex h-full flex-col rounded-[32px] p-5 overflow-y-auto">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--admin-primary-soft)] text-[var(--admin-primary-strong)]">
@@ -197,7 +197,7 @@ export function AdminShell({
         </aside>
 
         <div className="min-w-0 flex-1">
-          <header className="sticky top-3 z-30 mb-4">
+          <header className="sticky top-[76px] z-30 mb-4">
             <div className="admin-panel rounded-[30px] px-4 py-3 sm:px-5">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-3">

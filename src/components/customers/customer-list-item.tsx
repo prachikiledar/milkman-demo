@@ -1,12 +1,19 @@
 "use client";
 
-import { useState } from "react";
-import { CalendarDays, Minus, Plus, UserRound } from "lucide-react";
-import { AdminBadge, AdminDivider } from "@/components/layout/admin-ui";
+import { CalendarDays, UserRound } from "lucide-react";
+import { AdminBadge } from "@/components/layout/admin-ui";
 import { cn, formatCurrencyINR } from "@/lib/utils";
 import { CustomerCardActions } from "./customer-card-actions";
-import { CustomerDetailModal } from "./customer-detail-modal";
-import { CustomerSchedulePopover } from "./customer-schedule-popover";
+
+type CalendarDay = {
+  dateKey: string;
+  dateLabel: string;
+  dayOfMonth: number;
+  weekdayLabel: string;
+  liters: number;
+  status: "DELIVERED" | "SKIPPED" | "PAUSED" | "PENDING";
+  isFuture: boolean;
+};
 
 type CustomerListItemProps = {
   customer: {
@@ -14,38 +21,34 @@ type CustomerListItemProps = {
     customerCode: string;
     name: string;
     phone: string;
-    quantity: number;
-    quantityLabel: string;
-    due: number;
-    rate: number;
-    address: string;
     areaName: string;
-    areaCode: string;
-    status: "ACTIVE" | "PAUSED" | "INACTIVE";
-    lastPaymentDate?: Date | string | null;
-    deliveryInstruction?: string;
-    notes?: string;
+    quantity: number;
+    due: number;
+    lastPaymentDate: Date | null;
+    status: string;
+    calendarData?: {
+      monthLabel: string;
+      leadingBlankSlots: number;
+      days: CalendarDay[];
+    };
   };
   locale: string;
   tDue: string;
-  onView?: (mode: "view" | "details" | "schedule") => void;
+  onView?: (mode: "view" | "details" | "edit" | "schedule" | "calendar") => void;
   isMenuOpen: boolean;
   setMenuOpen: (isOpen: boolean) => void;
 };
 
-export function CustomerListItem({ 
-  customer, 
-  locale, 
-  tDue, 
+export function CustomerListItem({
+  customer,
+  locale,
+  tDue,
   onView,
   isMenuOpen,
-  setMenuOpen
+  setMenuOpen,
 }: CustomerListItemProps) {
-  const [isScheduleOpen, setIsScheduleOpen] = useState(false);
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-
-  const formatDateShort = (date: Date | string | null | undefined) => {
-    if (!date) return "N/A";
+  const formatDateShort = (date: Date | null) => {
+    if (!date) return "n/a";
     return new Intl.DateTimeFormat("en-IN", {
       day: "2-digit",
       month: "short",
@@ -53,10 +56,10 @@ export function CustomerListItem({
   };
 
   return (
-    <article 
+    <article
       className={cn(
         "admin-panel rounded-[22px] px-4 py-4 transition relative group",
-        (isMenuOpen || isPopoverOpen) ? "z-[60]" : "z-10",
+        isMenuOpen ? "z-[60]" : "z-10",
         "hover:bg-white active:scale-[0.995]"
       )}
     >
@@ -91,7 +94,7 @@ export function CustomerListItem({
 
         {/* 3. Due & Actions Section (Right) */}
         <div className="flex items-center justify-between sm:justify-end gap-3 pointer-events-auto sm:min-w-[200px]">
-          <div className="text-right mr-3">
+          <div className="flex flex-col items-start mr-3">
             <p
               className={cn(
                 "text-[15px] font-black tracking-tight",
@@ -101,34 +104,25 @@ export function CustomerListItem({
               {formatCurrencyINR(customer.due)}
             </p>
             <p className="text-[10px] font-bold uppercase text-gray-400 mt-0.5">
-              Due <span className="mx-1 text-gray-300">•</span> 
+              {tDue} <span className="mx-1 text-gray-300">•</span>
               <span className="text-gray-500 lowercase first-letter:uppercase">paid: {formatDateShort(customer.lastPaymentDate)}</span>
             </p>
           </div>
 
-          <div className="flex items-center gap-1.5">
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setIsPopoverOpen(!isPopoverOpen)}
-                className={cn(
-                  "flex h-10 w-10 items-center justify-center rounded-xl transition-all active:scale-90",
-                  isPopoverOpen ? "bg-blue-100 text-blue-600 shadow-inner" : "bg-gray-50 text-gray-400 hover:bg-blue-50 hover:text-blue-500"
-                )}
-                title="Delivery Schedule"
-              >
-                <CalendarDays className="h-5 w-5" />
-              </button>
+          <div className="flex items-center gap-4 flex-nowrap">
+            {/* Calendar Icon - Opens Modal */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onView?.('calendar');
+              }}
+              className="flex items-center justify-center h-11 w-11 rounded-2xl bg-white border border-gray-100 shadow-sm text-blue-600 hover:bg-blue-50 transition-all active:scale-95 group"
+              title="View Delivery Calendar"
+            >
+              <CalendarDays className="h-5 w-5 group-hover:scale-110 transition-transform" />
+            </button>
 
-              <CustomerSchedulePopover 
-                isOpen={isPopoverOpen}
-                onClose={() => setIsPopoverOpen(false)}
-                customerCode={customer.customerCode}
-                onViewFull={() => setIsScheduleOpen(true)}
-              />
-            </div>
-
-            <CustomerCardActions 
+            <CustomerCardActions
               id={customer.id}
               customerCode={customer.customerCode}
               isMenuOpen={isMenuOpen}
@@ -139,14 +133,6 @@ export function CustomerListItem({
           </div>
         </div>
       </div>
-
-      <CustomerDetailModal
-        isOpen={isScheduleOpen}
-        onClose={() => setIsScheduleOpen(false)}
-        customer={customer}
-        locale={locale}
-        mode="schedule"
-      />
     </article>
   );
 }

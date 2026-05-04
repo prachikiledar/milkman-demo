@@ -55,7 +55,7 @@ export default async function AdminCalendarPage({ params, searchParams }: AdminC
 
   return (
     <AdminShell locale={locale} title={t("title")} subtitle={t("subtitle")}>
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <AdminStatCard
           label={t("stats.monthlyLiters")}
           value={`${summary.totalLiters.toFixed(1)} L`}

@@ -12,22 +12,19 @@ const deliverySchema = new Schema(
       required: true,
       index: true,
     },
-    quantityDelivered: {
+    defaultQuantity: {
       type: Number,
       required: true,
       min: 0,
+      default: 0,
     },
-    baseQuantity: {
+    actualQuantity: {
       type: Number,
+      required: true,
       min: 0,
       default: 0,
     },
     extraQuantity: {
-      type: Number,
-      min: 0,
-      default: 0,
-    },
-    finalQuantity: {
       type: Number,
       min: 0,
       default: 0,

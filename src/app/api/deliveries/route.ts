@@ -9,14 +9,11 @@ import { MilkPlan } from "@/models/milk-plan";
 
 const deliverySchema = z.object({
   customerCode: z.string().trim().min(1),
-  type: z.enum(["DELIVERED", "SKIPPED", "PAUSED", "SKIP", "PAUSE"]).optional(),
-  status: z.enum(["DELIVERED", "SKIPPED", "PAUSED"]).optional(),
-  extraQuantity: z.number().nonnegative().optional(),
-  finalQuantity: z.number().nonnegative().optional(),
+  status: z.enum(["DELIVERED", "SKIPPED", "PAUSED"]),
+  actualQuantity: z.number().nonnegative().optional(),
+  extraQuantity: z.number().optional(),
   note: z.string().trim().optional(),
   date: z.string().trim().optional(),
-}).refine((value) => value.type || value.status, {
-  message: "Delivery status is required",
 });
 
 export async function GET(request: Request) {
@@ -57,61 +54,63 @@ export async function POST(request: Request) {
     dayStart.setHours(0, 0, 0, 0);
     const dayEnd = new Date(targetDate);
     dayEnd.setHours(23, 59, 59, 999);
-    const requestedStatus = payload.type || payload.status;
-    if (!requestedStatus) {
-      return NextResponse.json({ error: "Delivery status is required" }, { status: 400 });
-    }
-    const status =
-      requestedStatus === "SKIP"
-        ? "SKIPPED"
-        : requestedStatus === "PAUSE"
-          ? "PAUSED"
-          : requestedStatus;
+
+    const status = payload.status;
     const activePlan = await MilkPlan.findOne({ customerId: customer._id, isActive: true })
       .sort({ startDate: -1 })
       .lean<{ quantityLiters?: number; pricePerLiter?: number } | null>();
-    const baseQuantity = activePlan?.quantityLiters || 0;
-    const extraQuantity = payload.extraQuantity || 0;
-    const quantity =
-      status === "DELIVERED" ? payload.finalQuantity ?? baseQuantity + extraQuantity : 0;
 
-    const delivery =
-      (await Delivery.findOne({
+    const defaultQuantity = activePlan?.quantityLiters || 0;
+    
+    // Calculate actual and extra
+    let actualQuantity = payload.actualQuantity ?? defaultQuantity;
+    if (status !== "DELIVERED") {
+      actualQuantity = 0;
+    }
+    const extraQuantity = actualQuantity - defaultQuantity;
+
+    // Use findOneAndUpdate with upsert for consistency
+    const delivery = await Delivery.findOneAndUpdate(
+      {
         customerId: customer._id,
         date: { $gte: dayStart, $lte: dayEnd },
-      })) ||
-      new Delivery({
-        customerId: customer._id,
-        date: targetDate,
-      });
+      },
+      {
+        $set: {
+          customerId: customer._id,
+          date: targetDate,
+          status,
+          defaultQuantity,
+          actualQuantity,
+          extraQuantity,
+          pricePerLiter: activePlan?.pricePerLiter || 0,
+          note: payload.note || "",
+        }
+      },
+      { upsert: true, new: true }
+    );
 
-    delivery.status = status;
-    delivery.quantityDelivered = quantity;
-    delivery.baseQuantity = baseQuantity;
-    delivery.extraQuantity = extraQuantity;
-    delivery.finalQuantity = quantity;
-    delivery.pricePerLiter = activePlan?.pricePerLiter || 0;
-    delivery.note = payload.note || "";
-    await delivery.save();
-
+    // Sync exceptions for backward compatibility or legacy logic
     if (status === "DELIVERED") {
       await DeliveryException.deleteOne({
         customerId: customer._id,
         date: { $gte: dayStart, $lte: dayEnd },
       });
     } else {
-      const exception =
-        (await DeliveryException.findOne({
+      await DeliveryException.findOneAndUpdate(
+        {
           customerId: customer._id,
           date: { $gte: dayStart, $lte: dayEnd },
-        })) ||
-        new DeliveryException({
-          customerId: customer._id,
-          date: targetDate,
-        });
-
-      exception.type = status === "PAUSED" ? "PAUSE" : "SKIP";
-      await exception.save();
+        },
+        {
+          $set: {
+            customerId: customer._id,
+            date: targetDate,
+            type: status === "PAUSED" ? "PAUSE" : "SKIP",
+          }
+        },
+        { upsert: true }
+      );
     }
 
     return NextResponse.json({ delivery });

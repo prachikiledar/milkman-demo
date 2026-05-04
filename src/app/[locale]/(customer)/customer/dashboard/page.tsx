@@ -1,12 +1,10 @@
 import Link from "next/link";
 import {
   Bell,
-  CalendarDays,
   Clock,
   Filter,
   History as HistoryIcon,
   MapPin,
-  Package,
   Pause,
   Search,
   Wallet,
@@ -17,8 +15,10 @@ import { CustomerShell } from "@/components/layout/customer-shell";
 import {
   getCustomerDetailData,
   getDefaultCustomerCode,
+  getCustomerCalendarData,
 } from "@/lib/data-service";
 import { formatCurrencyINR } from "@/lib/utils";
+import { DashboardCalendar } from "@/components/calendar/dashboard-calendar";
 
 type CustomerDashboardPageProps = {
   params: Promise<{ locale: string }>;
@@ -42,7 +42,10 @@ export default async function CustomerDashboardPage({
 
   const t = await getTranslations({ locale });
   const customerCode = await getDefaultCustomerCode();
-  const customer = customerCode ? await getCustomerDetailData(customerCode) : null;
+  const [customer, calendar] = await Promise.all([
+    customerCode ? getCustomerDetailData(customerCode) : null,
+    getCustomerCalendarData()
+  ]);
 
   if (!customer) {
     return (
@@ -87,22 +90,8 @@ export default async function CustomerDashboardPage({
         </div>
       </div>
 
-      {/* Search */}
-      <div className="search mb-3">
-        <Search className="h-4 w-4 text-[color:var(--ink-300)]" aria-hidden="true" />
-        <input placeholder={t("home.hero.subtitle")} aria-label={t("home.hero.subtitle")} />
-        <button
-          type="button"
-          className="icon-btn"
-          style={{ width: 32, height: 32, boxShadow: "none" }}
-          aria-label="Filter"
-        >
-          <Filter className="h-4 w-4" />
-        </button>
-      </div>
-
       {/* Hero + monthly stats — side by side from tablet up */}
-      <div className="split-2 split-2-wide">
+      <div className="split-2 split-2-wide mb-6">
         <section className="hero">
           <span className="eyebrow">{t("home.hero.eyebrow")}</span>
           <h2>{t("home.hero.title")}</h2>
@@ -114,9 +103,6 @@ export default async function CustomerDashboardPage({
               <Pause className="h-4 w-4" />
               {t("home.hero.pause")}
             </button>
-            <Link href={`/${locale}/customer/calendar`} className="btn btn-sm btn-ghost">
-              {t("home.hero.track")}
-            </Link>
           </div>
         </section>
 
@@ -136,51 +122,22 @@ export default async function CustomerDashboardPage({
         </div>
       </div>
 
-      {/* Quick actions */}
-      <div className="section-head">
-        <h3>{t("home.quickActions")}</h3>
+      {/* Delivery Calendar - Always Visible */}
+      <div className="section-head mt-8">
+        <h3>Delivery Calendar</h3>
+        <span className="text-[10px] font-bold text-[var(--ink-300)] uppercase tracking-widest">Always Live</span>
       </div>
-      <div className="quick-grid">
-        <Link href={`/${locale}/customer/calendar`} className="quick">
-          <span
-            className="q-icn"
-            style={{ background: "var(--brand-soft)", color: "var(--brand-ink)" }}
-          >
-            <Package className="h-5 w-5" />
-          </span>
-          <span>{t("home.subscribe")}</span>
-        </Link>
-        <Link href={`/${locale}/customer/calendar`} className="quick">
-          <span
-            className="q-icn"
-            style={{ background: "var(--mint-soft)", color: "#065F46" }}
-          >
-            <CalendarDays className="h-5 w-5" />
-          </span>
-          <span>{t("home.schedule")}</span>
-        </Link>
-        <Link href={`/${locale}/customer/billing`} className="quick">
-          <span
-            className="q-icn"
-            style={{ background: "var(--sun-soft)", color: "#92400E" }}
-          >
-            <Wallet className="h-5 w-5" />
-          </span>
-          <span>{t("home.topUp")}</span>
-        </Link>
-        <Link href={`/${locale}/customer/history`} className="quick">
-          <span
-            className="q-icn"
-            style={{ background: "var(--rose-soft)", color: "#9F1239" }}
-          >
-            <HistoryIcon className="h-5 w-5" />
-          </span>
-          <span>{t("home.history")}</span>
-        </Link>
-      </div>
+      
+      {calendar && (
+        <DashboardCalendar 
+          monthLabel={calendar.monthMeta.monthLabel}
+          leadingBlankSlots={calendar.monthMeta.leadingBlankSlots}
+          days={calendar.days}
+        />
+      )}
 
       {/* Subscription details */}
-      <div className="section-head">
+      <div className="section-head mt-10">
         <h3>{t("home.subscriptions")}</h3>
         <Link href={`/${locale}/customer/billing`}>{t("common.viewAll")}</Link>
       </div>
@@ -213,6 +170,31 @@ export default async function CustomerDashboardPage({
           </span>
         </div>
       </article>
+
+      {/* Quick actions */}
+      <div className="section-head mt-10">
+        <h3>{t("home.quickActions")}</h3>
+      </div>
+      <div className="quick-grid">
+        <Link href={`/${locale}/customer/history`} className="quick">
+          <span
+            className="q-icn"
+            style={{ background: "var(--brand-soft)", color: "var(--brand-ink)" }}
+          >
+            <HistoryIcon className="h-5 w-5" />
+          </span>
+          <span>{t("home.history")}</span>
+        </Link>
+        <Link href={`/${locale}/customer/billing`} className="quick">
+          <span
+            className="q-icn"
+            style={{ background: "var(--sun-soft)", color: "#92400E" }}
+          >
+            <Wallet className="h-5 w-5" />
+          </span>
+          <span>{t("home.topUp")}</span>
+        </Link>
+      </div>
     </CustomerShell>
   );
 }
