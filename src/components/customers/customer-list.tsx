@@ -101,6 +101,7 @@ export function CustomerList({ customers, areas, locale }: CustomerListProps) {
               key={customer.id}
               customer={customer}
               locale={locale}
+              tDue={tCommon ? tCommon("due") : "Due"}
               onView={(mode: any) => handleViewCustomer(customer, mode)}
               isMenuOpen={openMenuId === customer.id}
               setMenuOpen={(isOpen: any) => setOpenMenuId(isOpen ? customer.id : null)}
