@@ -28,7 +28,7 @@ export default async function LocaleHomePage({ params }: LocaleHomePageProps) {
             <div className="flex justify-center lg:justify-start">
               <a
                 href="#options"
-                className="btn-brand flex h-14 items-center justify-center rounded-full px-10 text-base font-bold shadow-lg transition-all hover:scale-105 active:scale-95"
+                className="btn-brand flex h-14 w-full md:w-auto mt-4 items-center justify-center rounded-full px-10 text-base font-bold shadow-lg transition-all hover:scale-105 active:scale-95"
               >
                 {t("landing.startNow")}
               </a>

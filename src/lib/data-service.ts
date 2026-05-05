@@ -556,12 +556,11 @@ export async function getDashboardData() {
           : entry.todayException?.type === "PAUSE"
             ? "Delivery paused"
             : "Delivery skipped",
-      tone:
-        entry.totals.dueAmount > 0
-          ? "danger"
-          : entry.todayException?.type === "PAUSE"
-            ? "warning"
-            : "blue",
+      tone: (entry.totals.dueAmount > 0
+        ? "danger"
+        : entry.todayException?.type === "PAUSE"
+          ? "warning"
+          : "blue") as "blue" | "success" | "warning" | "danger",
     }));
 
   return {

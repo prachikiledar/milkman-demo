@@ -234,7 +234,7 @@ export function AdminShell({
             </div>
           </header>
 
-          <main className="space-y-4 pb-4">
+          <main className="space-y-4 pb-24">
             {!hideHero && (
               <section className="admin-panel rounded-[32px] px-5 py-5 sm:px-6">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -273,6 +273,34 @@ export function AdminShell({
 
             {children}
           </main>
+
+          {/* Sticky Bottom Nav (Mobile Only) */}
+          <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg border-t border-slate-200 flex items-center justify-around h-16 px-2 lg:hidden">
+            {[
+              { href: "dashboard", icon: Home },
+              { href: "deliveries", icon: Droplets },
+              { href: "customers", icon: Users },
+              { href: "billing", icon: CreditCard },
+            ].map(({ href, icon: Icon }) => {
+              const target = `/${locale}/admin/${href}`;
+              const isActive = pathname === target || pathname.startsWith(`${target}/`);
+              return (
+                <Link
+                  key={href}
+                  href={target}
+                  className={cn(
+                    "flex flex-col items-center justify-center gap-1 transition-all active:scale-90",
+                    isActive ? "text-blue-600" : "text-slate-400"
+                  )}
+                >
+                  <Icon className={cn("h-6 w-6", isActive && "stroke-[2.5px]")} />
+                  <span className={cn("text-[10px] font-bold", isActive ? "text-blue-600" : "text-slate-400")}>
+                    {tNav(href)}
+                  </span>
+                </Link>
+              );
+            })}
+          </nav>
         </div>
       </div>
     </div>
