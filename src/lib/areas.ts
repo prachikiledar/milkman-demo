@@ -2,7 +2,11 @@ import areaMaster from "@/data/areas.json";
 
 export type AreaMasterRecord = {
   code: string;
-  name: string;
+  name: {
+    en: string;
+    hi: string;
+    pa: string;
+  };
 };
 
 export const defaultAreaMaster: AreaMasterRecord[] = areaMaster;

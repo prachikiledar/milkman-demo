@@ -54,7 +54,7 @@ export default async function AreaInsightsPage({ params }: AreaInsightsPageProps
             <div className="flex items-center justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold text-[var(--admin-text)]">
-                  {area.name}
+                  {typeof area.name === "string" ? area.name : (area.name[locale as keyof typeof area.name] || area.name.en)}
                 </h2>
                 <p className="mt-1 text-sm text-[var(--admin-muted)]">Route Code: {area.code}</p>
               </div>

@@ -6,7 +6,14 @@ import { Area } from "@/models/area";
 
 const areaSchema = z.object({
   code: z.string().trim().optional(),
-  name: z.string().trim().min(2, "Area name is required"),
+  name: z.union([
+    z.string().trim().min(2, "Area name is required"),
+    z.object({
+      en: z.string().trim().min(2),
+      hi: z.string().trim().optional(),
+      pa: z.string().trim().optional(),
+    }),
+  ]),
   isActive: z.boolean().optional(),
 });
 
@@ -41,7 +48,8 @@ export async function POST(request: Request) {
     await connectToDatabase();
 
     const payload = areaSchema.parse(await request.json());
-    const code = normalizeAreaCode(payload.code || payload.name);
+    const nameForCode = typeof payload.name === "string" ? payload.name : payload.name.en;
+    const code = normalizeAreaCode(payload.code || nameForCode);
 
     const existing = await Area.findOne({ code }).lean();
 

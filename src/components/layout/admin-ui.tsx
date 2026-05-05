@@ -13,6 +13,7 @@ type AdminStatCardProps = {
   hint: string;
   icon: LucideIcon;
   tone?: "blue" | "success" | "warning" | "danger";
+  className?: string;
 };
 
 type AdminBadgeProps = {
@@ -42,6 +43,7 @@ export function AdminStatCard({
   hint,
   icon: Icon,
   tone = "blue",
+  className,
 }: AdminStatCardProps) {
   const toneMap = {
     blue: "bg-[var(--admin-primary-soft)] text-[var(--admin-primary-strong)]",
@@ -51,24 +53,24 @@ export function AdminStatCard({
   } as const;
 
   return (
-    <article className="admin-kpi-card rounded-[26px] p-5">
-      <div className="flex items-start justify-between gap-3">
+    <article className={cn("admin-kpi-card rounded-[22px] p-4 sm:rounded-[26px] sm:p-5", className)}>
+      <div className="flex items-start justify-between gap-2 sm:gap-3">
         <div>
-          <p className="text-sm font-medium text-[var(--admin-muted)]">{label}</p>
-          <p className="mt-3 text-3xl font-semibold tracking-tight text-[var(--admin-text)]">
+          <p className="text-[11px] font-medium text-[var(--admin-muted)] sm:text-sm">{label}</p>
+          <p className="mt-1 text-xl font-bold tracking-tight text-[var(--admin-text)] sm:mt-3 sm:text-3xl sm:font-semibold">
             {value}
           </p>
         </div>
         <div
           className={cn(
-            "flex h-11 w-11 items-center justify-center rounded-2xl",
+            "flex h-9 w-9 items-center justify-center rounded-xl sm:h-11 sm:w-11 sm:rounded-2xl",
             toneMap[tone],
           )}
         >
-          <Icon className="h-5 w-5" />
+          <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
         </div>
       </div>
-      <p className="mt-3 text-sm leading-6 text-[var(--admin-muted)]">{hint}</p>
+      <p className="mt-2 text-[10px] leading-4 text-[var(--admin-muted)] sm:mt-3 sm:text-sm sm:leading-6">{hint}</p>
     </article>
   );
 }

@@ -24,3 +24,23 @@ export async function verifyToken(token: string) {
     return null;
   }
 }
+
+export async function getCurrentUser(role?: "ADMIN" | "CUSTOMER") {
+  const { cookies } = await import("next/headers");
+  const cookieStore = await cookies();
+  
+  let token = null;
+  
+  if (role) {
+    token = cookieStore.get(`token_${role}`)?.value;
+  }
+  
+  if (!token) {
+    token = cookieStore.get("token_ADMIN")?.value || 
+            cookieStore.get("token_CUSTOMER")?.value || 
+            cookieStore.get("token")?.value;
+  }
+
+  if (!token) return null;
+  return verifyToken(token);
+}

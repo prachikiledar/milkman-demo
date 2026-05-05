@@ -18,6 +18,11 @@ export default async function AdminReportsPage({ params }: AdminReportsPageProps
     getPurchaseLedgerData(),
   ]);
   const topArea = summary.topArea;
+  const topAreaName = topArea
+    ? typeof topArea.name === "string"
+      ? topArea.name
+      : (topArea.name[locale as keyof typeof topArea.name] || topArea.name.en)
+    : "";
 
   return (
     <AdminShell locale={locale} title={t("title")} subtitle={t("subtitle")}>
@@ -34,7 +39,7 @@ export default async function AdminReportsPage({ params }: AdminReportsPageProps
           value={`${topArea?.monthlyConsumption?.toFixed(1) ?? "0.0"} L`}
           hint={
             topArea
-              ? t("stats.topConsumptionHintArea", { area: topArea.name })
+              ? t("stats.topConsumptionHintArea", { area: topAreaName })
               : t("stats.topConsumptionHintNone")
           }
           icon={CircleDollarSign}
@@ -71,7 +76,11 @@ export default async function AdminReportsPage({ params }: AdminReportsPageProps
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-semibold text-[var(--admin-text)]">{area.name}</p>
+                      <p className="font-semibold text-[var(--admin-text)]">
+                        {typeof area.name === "string" 
+                          ? area.name 
+                          : (area.name[locale as keyof typeof area.name] || area.name.en)}
+                      </p>
                       <AdminBadge tone="blue">{area.code}</AdminBadge>
                     </div>
                     <p className="mt-1 text-sm text-[var(--admin-muted)]">

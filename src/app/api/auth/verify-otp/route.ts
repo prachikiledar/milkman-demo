@@ -31,7 +31,8 @@ export async function POST(req: Request) {
 
     // Bypass OTP verification in development mode
     const isDevBypass = process.env.NODE_ENV === "development" && otp === "123456";
-
+    console.log("user", user)
+    console.log("isDEvBypass", isDevBypass)
     if (!isDevBypass) {
       // Check if OTP matches and is not expired
       if (user.otp !== otp) {
@@ -53,23 +54,72 @@ export async function POST(req: Request) {
     user.otpExpiry = undefined;
     await user.save();
 
+    // Auto-provision customer profile if missing
+    if (user.role === "CUSTOMER") {
+      const { CustomerProfile } = await import("@/models/customer-profile");
+      const { MilkPlan } = await import("@/models/milk-plan");
+      const { Area } = await import("@/models/area");
+
+      let profile = await CustomerProfile.findOne({ userId: user._id });
+      if (!profile) {
+        const defaultArea = await Area.findOne() || { code: "GN", name: "Ghuman Nagar" };
+        profile = await CustomerProfile.create({
+          userId: user._id,
+          customerCode: `CUST-${user.phone.slice(-4)}-${Math.floor(1000 + Math.random() * 9000)}`,
+          addressLine1: "Set your address",
+          areaCode: defaultArea.code,
+          areaName: defaultArea.name,
+        });
+
+        // Create default milk plan
+        await MilkPlan.create({
+          customerId: profile._id,
+          quantityLiters: 1.0,
+          pricePerLiter: 66,
+          startDate: new Date(),
+          isActive: true
+        });
+      }
+    }
+
     // Create JWT token
     const token = await signToken({
-      id: user._id,
+      id: String(user._id),
       phone: user.phone,
       role: user.role,
     });
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       token,
       user: {
         id: user._id,
         phone: user.phone,
         role: user.role,
-        name: user.name,
+        name: user.name || user.phone,
       },
     });
+
+    // Set cookie for server-side auth
+    const cookieName = `token_${user.role}`;
+    response.cookies.set(cookieName, token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60, // 7 days
+      path: "/",
+    });
+
+    // Also set a generic token cookie for general use
+    response.cookies.set("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60,
+      path: "/",
+    });
+
+    return response;
   } catch (error: any) {
     console.error("Verify OTP Error:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

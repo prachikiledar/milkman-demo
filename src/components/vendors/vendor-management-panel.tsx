@@ -58,7 +58,8 @@ type MilkLedgerEntry = {
 
 type VendorManagementPanelProps = {
   initialVendors: VendorRecord[];
-  areas: Array<{ code: string; name: string }>;
+  areas: Array<{ code: string; name: string | { en: string; hi: string; pa: string } }>;
+  locale: string;
 };
 
 type VendorFormState = {
@@ -104,7 +105,7 @@ function getStartingEntryForm(vendor?: VendorRecord | null): EntryFormState {
 }
 
 function getStartingVendorForm(
-  areas: Array<{ code: string; name: string }>,
+  areas: Array<{ code: string; name: string | { en: string; hi: string; pa: string } }>,
   vendor?: VendorRecord | null,
 ): VendorFormState {
   return {
@@ -118,7 +119,7 @@ function getStartingVendorForm(
   };
 }
 
-export function VendorManagementPanel({ initialVendors, areas }: VendorManagementPanelProps) {
+export function VendorManagementPanel({ initialVendors, areas, locale }: VendorManagementPanelProps) {
   const router = useRouter();
   const entryQuantityRef = useRef<HTMLInputElement>(null);
   const [vendors, setVendors] = useState(initialVendors);
@@ -398,7 +399,10 @@ export function VendorManagementPanel({ initialVendors, areas }: VendorManagemen
 
   const areaOptions = [
     { code: "ALL", name: "All areas" },
-    ...areas,
+    ...areas.map(a => ({
+      code: a.code,
+      name: typeof a.name === 'string' ? a.name : (a.name[locale as keyof typeof a.name] || a.name.en)
+    })),
   ];
 
   return (
@@ -661,7 +665,7 @@ export function VendorManagementPanel({ initialVendors, areas }: VendorManagemen
                 >
                   {areas.map((area) => (
                     <option key={area.code} value={area.code}>
-                      {area.code} • {area.name}
+                      {area.code} • {typeof area.name === 'string' ? area.name : (area.name[locale as keyof typeof area.name] || area.name.en)}
                     </option>
                   ))}
                 </AdminSelect>

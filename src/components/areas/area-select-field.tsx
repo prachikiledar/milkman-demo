@@ -2,11 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { AdminField, AdminSelect } from "@/components/layout/admin-ui";
-import { defaultAreaMaster } from "@/lib/areas";
+import { defaultAreaMaster, type AreaMasterRecord } from "@/lib/areas";
+import { useLocale } from "next-intl";
 
-type AreaOption = {
-  code: string;
-  name: string;
+type AreaOption = AreaMasterRecord & {
   isActive?: boolean;
 };
 
@@ -19,6 +18,7 @@ export function AreaSelectField({
   defaultValue,
   label = "Area code",
 }: AreaSelectFieldProps) {
+  const locale = useLocale() as "en" | "hi" | "pa";
   const [areas, setAreas] = useState<AreaOption[]>(defaultAreaMaster);
 
   useEffect(() => {
@@ -52,11 +52,17 @@ export function AreaSelectField({
   return (
     <AdminField label={label}>
       <AdminSelect defaultValue={defaultValue || areas[0]?.code}>
-        {areas.map((area) => (
-          <option key={area.code} value={area.code}>
-            {area.code} • {area.name}
-          </option>
-        ))}
+        {areas.map((area) => {
+          const areaName = typeof area.name === "string" 
+            ? area.name 
+            : (area.name[locale] || area.name.en);
+            
+          return (
+            <option key={area.code} value={area.code}>
+              {area.code} • {areaName}
+            </option>
+          );
+        })}
       </AdminSelect>
     </AdminField>
   );

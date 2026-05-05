@@ -1,6 +1,6 @@
 {
   "brand": {
-    "name": "ਡੇਅਰਲੀ",
+    "name": "ਡੇਅਰੀ",
     "tagline": "ਹਰ ਸਵੇਰ ਤਾਜ਼ਾ ਦੁੱਧ"
   },
   "common": {
@@ -79,7 +79,8 @@
     "history": "ਇਤਿਹਾਸ",
     "subscriptions": "ਤੁਹਾਡੀਆਂ ਸਬਸਕ੍ਰਿਪਸ਼ਨਾਂ",
     "greeting": "ਸਤ ਸ੍ਰੀ ਅਕਾਲ, {name}",
-    "location": "ਡਿਲੀਵਰੀ ਪਤਾ"
+    "location": "ਡਿਲੀਵਰੀ ਪਤਾ",
+    "searchPlaceholder": "ਤੁਹਾਡੀ ਨਿਰਧਾਰਤ ਡਿਲੀਵਰੀ ਰਸਤੇ 'ਤੇ ਹੈ।"
   },
   "nav": {
     "home": "ਹੋਮ",
@@ -93,7 +94,8 @@
     "customers": "ਗਾਹਕ",
     "deliveries": "ਡਿਲੀਵਰੀਆਂ",
     "reports": "ਰਿਪੋਰਟਾਂ",
-    "newPlan": "ਨਵੀਂ ਯੋਜਨਾ"
+    "newPlan": "ਨਵੀਂ ਯੋਜਨਾ",
+    "login": "ਲੌਗਇਨ"
   },
   "status": {
     "active": "ਸਰਗਰਮ",
@@ -116,6 +118,7 @@
     "pendingDue": "ਬਕਾਇਆ ਰਾਸ਼ੀ",
     "todaysStatus": "ਅੱਜ ਦੀ ਸਥਿਤੀ",
     "deliveryStatus": "ਡਿਲੀਵਰੀ ਸਥਿਤੀ: {status}",
+    "deliveryStatusLabel": "ਡਿਲੀਵਰੀ ਦੀ ਸਥਿਤੀ",
     "planLine": "ਤੁਹਾਡੀ ਯੋਜਨਾ {plan} ਹੈ। ਇਸ ਮਹੀਨੇ ਬਿੱਲ: {billed}। ਬਕਾਇਆ: {due}।",
     "lastUpdate": "ਆਖਰੀ ਅੱਪਡੇਟ",
     "noUpdate": "ਅਜੇ ਕੋਈ ਅੱਪਡੇਟ ਨਹੀਂ",
@@ -176,11 +179,17 @@
     "signOut": "ਸਾਈਨ ਆਊਟ"
   },
   "landing": {
-    "eyebrow": "ਡੇਅਰਲੀ",
+    "eyebrow": "ਡੇਅਰੀ",
     "title": "ਤਾਜ਼ਾ ਦੁੱਧ, ਹਰ ਸਵੇਰ ਤੁਹਾਡੇ ਘਰ",
     "description": "ਜਾਰੀ ਰੱਖਣ ਲਈ ਸਹੀ ਅਨੁਭਵ ਚੁਣੋ — ਆਪਣੀ ਯੋਜਨਾ ਵੇਖੋ ਜਾਂ ਸਵੇਰ ਦਾ ਰੂਟ ਚਲਾਓ।",
     "openAdmin": "ਐਡਮਿਨ ਖੋਲ੍ਹੋ",
     "customerView": "ਗਾਹਕ ਵਿਊ",
+    "heroTitle": "ਤਾਜ਼ਾ ਦੁੱਧ, ਹਰ ਸਵੇਰ ਤੁਹਾਡੇ ਘਰ",
+    "heroSubtitle": "ਡਿਲੀਵਰੀ, ਭੁਗਤਾਨ ਅਤੇ ਗਾਹਕਾਂ ਨੂੰ ਇੱਕੋ ਥਾਂ 'ਤੇ ਆਸਾਨੀ ਨਾਲ ਪ੍ਰਬੰਧਿਤ ਕਰੋ।",
+    "startNow": "ਹੁਣੇ ਸ਼ੁਰੂ ਕਰੋ",
+    "customerDesc": "ਆਪਣੀ ਰੋਜ਼ਾਨਾ ਦੁੱਧ ਦੀ ਡਿਲੀਵਰੀ ਦਾ ਪ੍ਰਬੰਧ ਕਰੋ, ਆਪਣਾ ਡਿਲੀਵਰੀ ਇਤਿਹਾਸ ਦੇਖੋ ਅਤੇ ਭੁਗਤਾਨਾਂ ਨੂੰ ਆਸਾਨੀ ਨਾਲ ਟ੍ਰੈਕ ਕਰੋ।",
+    "adminDesc": "ਵੈਂਡਰਾਂ ਲਈ ਪੂਰਾ ਕੰਟਰੋਲ ਪੈਨਲ। ਰੂਟਾਂ, ਗਾਹਕਾਂ ਅਤੇ ਬਿਲਿੰਗ ਚੱਕਰਾਂ ਨੂੰ ਇੱਕੋ ਥਾਂ 'ਤੇ ਪ੍ਰਬੰਧਿਤ ਕਰੋ।",
+    "copyright": "© 2026 ਡੇਅਰੀ ਮਾਡਰਨ ਡੇਅਰੀ ਸਿਸਟਮ",
     "quickRoutes": "ਤੁਰੰਤ ਰੂਟ",
     "starterStatus": "",
     "statusItems": {
@@ -344,6 +353,10 @@
         "statusInactive": "ਅਸਰਗਰਮ",
         "languageEnglish": "English",
         "languageHindi": "हिंदी",
+        "languagePunjabi": "ਪੰਜਾਬੀ",
+        "deliveryInstruction": "ਡਿਲੀਵਰੀ ਹਦਾਇਤ",
+        "deliveryInstructionPlaceholder": "ਉਦਾਹਰਨ ਲਈ: ਇੱਕ ਵਾਰ ਘੰਟੀ ਵਜਾਓ ਅਤੇ ਦਰਵਾਜ਼ੇ ਤੇ ਛੱਡ ਦਿਓ",
+        "areaCodePlaceholder": "ਉਦਾਹਰਨ ਲਈ: SC",
         "errorSave": "ਗਾਹਕ ਸੇਵ ਨਹੀਂ ਹੋ ਸਕਿਆ"
       }
     },
@@ -463,8 +476,9 @@
       "paid": "ਭੁਗਤਾਨ",
       "due": "ਬਕਾਇਆ",
       "ledgerLine": "{area} ਲੈਜਰ • {code}",
-      "recentEntriesTitle": "ਹਾਲੀਆ ਐਂਟਰੀਆਂ",
-      "recentEntriesSubtitle": "ਨਵੀਨਤਮ ਬਿਲਿੰਗ ਕਾਰਜ ਅਤੇ ਸੰਗ੍ਰਹਿ",
+      "recentEntriesTitle": "ਤਾਜ਼ਾ ਭੁਗਤਾਨ",
+      "recentEntriesSubtitle": "ਗਾਹਕਾਂ ਤੋਂ ਹਾਲ ਹੀ ਵਿੱਚ ਪ੍ਰਾਪਤ ਹੋਏ ਭੁਗਤਾਨ",
+      "viewAllPayments": "ਸਾਰੇ ਭੁਗਤਾਨ ਦੇਖੋ",
       "paymentTitle": "ਭੁਗਤਾਨ ਦਰਜ ਕਰੋ",
       "paymentSubtitle": "ਨਕਦ, UPI ਜਾਂ ਬੈਂਕ ਐਂਟਰੀ ਜਲਦੀ ਜੋੜੋ।",
       "paymentCustomer": "ਗਾਹਕ",

@@ -22,7 +22,11 @@ export type DemoCustomer = {
 
 export type DemoArea = {
   code: string;
-  name: string;
+  name: {
+    en: string;
+    hi: string;
+    pa: string;
+  };
 };
 
 export const demoAreas: DemoArea[] = areaMaster;

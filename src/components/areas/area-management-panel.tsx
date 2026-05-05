@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { MapPinned, PencilLine, Plus, RefreshCcw, Trash2 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import {
   AdminBadge,
   AdminButton,
@@ -14,7 +14,7 @@ import {
 
 type AreaRecord = {
   code: string;
-  name: string;
+  name: string | { en: string; hi: string; pa: string };
   isActive?: boolean;
   sortOrder?: number;
 };
@@ -33,6 +33,7 @@ const emptyForm: FormState = {
 
 export function AreaManagementPanel() {
   const t = useTranslations("admin.areas");
+  const locale = useLocale() as "en" | "hi" | "pa";
   const [areas, setAreas] = useState<AreaRecord[]>([]);
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
@@ -66,9 +67,10 @@ export function AreaManagementPanel() {
 
       if (matched) {
         setSelectedCode(matched.code);
+        const nameString = typeof matched.name === "string" ? matched.name : matched.name.en;
         setForm({
           code: matched.code,
-          name: matched.name,
+          name: nameString,
           isActive: matched.isActive !== false,
         });
       } else {
@@ -89,9 +91,10 @@ export function AreaManagementPanel() {
 
   function selectArea(area: AreaRecord) {
     setSelectedCode(area.code);
+    const nameString = typeof area.name === "string" ? area.name : area.name.en;
     setForm({
       code: area.code,
-      name: area.name,
+      name: nameString,
       isActive: area.isActive !== false,
     });
     setStatusMessage("");
@@ -239,7 +242,9 @@ export function AreaManagementPanel() {
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-semibold text-[var(--admin-text)]">{area.name}</p>
+                      <p className="font-semibold text-[var(--admin-text)]">
+                        {typeof area.name === "string" ? area.name : (area.name[locale] || area.name.en)}
+                      </p>
                       <AdminBadge tone={area.isActive === false ? "warning" : "success"}>
                         {area.isActive === false ? t("inactiveBadge") : t("activeBadge")}
                       </AdminBadge>

@@ -98,9 +98,9 @@ function buildCustomerSeed(areaMaster) {
       pricePerLiter,
       unitLabel: "L",
       areaCode: area.code,
-      areaName: area.name,
+      areaName: area.name.en,
       addressLine1: `House ${index + 11}, Block ${String.fromCharCode(65 + (index % 5))}`,
-      addressLine2: `${area.name}, Kharar`,
+      addressLine2: `${area.name.en}, Kharar`,
       landmark: landmarks[index % landmarks.length],
       notes:
         index % 4 === 0
@@ -132,10 +132,10 @@ async function seedDemoData() {
     { code: "PANEER_FRESH", name: "Fresh Paneer", category: "DAIRY_ADDON", unit: "KG", defaultRate: 420, sortOrder: 6 },
   ];
   const vendorMaster = [
-    { code: "VEND001", name: "Kharar Milk Traders", phone: "9200000001", areaCode: areaMaster[3].code, areaName: areaMaster[3].name, notes: "Primary morning milk supplier", sortOrder: 1 },
-    { code: "VEND002", name: "Landra Dairy Supply", phone: "9200000002", areaCode: areaMaster[4].code, areaName: areaMaster[4].name, notes: "Bulk milk backup vendor", sortOrder: 2 },
-    { code: "VEND003", name: "Gilco Dairy Foods", phone: "9200000003", areaCode: areaMaster[1].code, areaName: areaMaster[1].name, notes: "Supplies ghee, paneer, and curd", sortOrder: 3 },
-    { code: "VEND004", name: "Shivalik Fresh Farms", phone: "9200000004", areaCode: areaMaster[2].code, areaName: areaMaster[2].name, notes: "Weekend special milk sourcing", sortOrder: 4 },
+    { code: "VEND001", name: "Kharar Milk Traders", phone: "9200000001", areaCode: areaMaster[3].code, areaName: areaMaster[3].name.en, notes: "Primary morning milk supplier", sortOrder: 1 },
+    { code: "VEND002", name: "Landra Dairy Supply", phone: "9200000002", areaCode: areaMaster[4].code, areaName: areaMaster[4].name.en, notes: "Bulk milk backup vendor", sortOrder: 2 },
+    { code: "VEND003", name: "Gilco Dairy Foods", phone: "9200000003", areaCode: areaMaster[1].code, areaName: areaMaster[1].name.en, notes: "Supplies ghee, paneer, and curd", sortOrder: 3 },
+    { code: "VEND004", name: "Shivalik Fresh Farms", phone: "9200000004", areaCode: areaMaster[2].code, areaName: areaMaster[2].name.en, notes: "Weekend special milk sourcing", sortOrder: 4 },
   ];
   const customerSeed = buildCustomerSeed(areaMaster);
   const referenceDate = toDayStart(new Date());
@@ -230,7 +230,11 @@ async function seedDemoData() {
     {
       $set: {
         role: "SUPER_ADMIN",
-        name: "Milkman Owner",
+        name: {
+          en: "Milkman Owner",
+          hi: "मिल्कमैन ओनर",
+          pa: "ਮਿਲਕਮੈਨ ਓਨਰ"
+        },
         phone: "919876543210",
         email: "owner@milkman.local",
         passwordHash: "seeded-super-admin",
@@ -251,7 +255,11 @@ async function seedDemoData() {
       {
         $set: {
           role: "CUSTOMER",
-          name: customer.name,
+          name: {
+            en: customer.name,
+            hi: customer.name, // Fallback to en for hi/pa in seed for now
+            pa: customer.name
+          },
           phone: customer.phone,
           passwordHash: "seeded-password",
           preferredLanguage: customer.preferredLanguage,

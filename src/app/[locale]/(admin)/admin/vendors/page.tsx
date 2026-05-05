@@ -21,7 +21,8 @@ export default async function AdminVendorsPage({ params }: AdminVendorsPageProps
       </AdminCard>
       <VendorManagementPanel
         initialVendors={vendors}
-        areas={areas.map((area) => ({ code: area.code, name: area.name }))}
+        areas={areas}
+        locale={locale}
       />
     </AdminShell>
   );

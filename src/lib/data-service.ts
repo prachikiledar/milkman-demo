@@ -15,7 +15,11 @@ import { Vendor } from "@/models/vendor";
 type PlainArea = {
   _id: string;
   code: string;
-  name: string;
+  name: {
+    en: string;
+    hi: string;
+    pa: string;
+  };
   isActive?: boolean;
   sortOrder?: number;
 };
@@ -342,7 +346,12 @@ function buildCustomerEntities(base: Awaited<ReturnType<typeof getBaseData>>) {
     const paidAmount = payments.reduce((total, payment) => total + payment.amount, 0);
     const totalAmount = milkAmount + addonAmount;
     const dueAmount = Math.max(totalAmount - paidAmount, 0);
+    const advanceAmount = Math.max(paidAmount - totalAmount, 0);
     const deliveredDays = billableDays;
+
+    const lastPayment = payments.length > 0 
+      ? [...payments].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0]
+      : null;
 
     return {
       profile,
@@ -350,20 +359,33 @@ function buildCustomerEntities(base: Awaited<ReturnType<typeof getBaseData>>) {
       activePlan,
       monthExceptions,
       todayException,
-      payments,
+      payments: payments.map(p => ({
+        id: String(p._id),
+        amount: p.amount,
+        date: p.date,
+        dateLabel: formatDateLabel(p.date),
+        mode: p.mode,
+        note: p.note || "",
+      })),
       totals: {
         milkAmount,
         addonAmount,
         totalAmount,
         paidAmount,
         dueAmount,
+        advanceAmount,
         deliveredDays,
         skippedDays,
         pausedDays,
         totalDays,
         monthlyLiters: billableDays * quantity,
       },
-      lastPaymentDate: payments.length > 0 ? new Date(Math.max(...payments.map(p => new Date(p.date).getTime()))) : null,
+      lastPayment: lastPayment ? {
+        amount: lastPayment.amount,
+        date: lastPayment.date,
+        dateLabel: formatDateLabel(lastPayment.date),
+        mode: lastPayment.mode,
+      } : null,
     };
   });
 }
@@ -419,6 +441,7 @@ export async function getCustomerListData() {
         quantity: entry.activePlan?.quantityLiters || 0,
         rate: entry.activePlan?.pricePerLiter || 0,
         due: entry.totals.dueAmount,
+        advance: entry.totals.advanceAmount,
         billed: entry.totals.totalAmount,
         paid: entry.totals.paidAmount,
         notes: entry.profile.notes || "",
@@ -426,7 +449,8 @@ export async function getCustomerListData() {
         deliverySlot: "Morning",
         deliveryStatus,
         extraQuantity: delivery?.extraQuantity || 0,
-        lastPaymentDate: entry.lastPaymentDate,
+        lastPayment: entry.lastPayment,
+        paymentHistory: entry.payments,
         status:
           entry.profile.isActive === false || entry.user?.status === "INACTIVE"
             ? "INACTIVE"
@@ -649,23 +673,43 @@ export async function getBillingData() {
       dueAmount: customers.reduce((total, customer) => total + customer.due, 0),
     },
     customers,
-    recentPayments: base.paymentsMonth.slice(0, 12).map((payment) => {
-      const customer = customers.find(
-        (entry) => entry.customerCode ===
-          base.profiles.find((profile) => String(profile._id) === String(payment.customerId))
-            ?.customerCode,
-      );
+    recentPayments: (() => {
+      const grouped = new Map<string, any>();
+      
+      for (const payment of base.paymentsMonth) {
+        const customerId = String(payment.customerId);
+        const date = new Date(payment.date);
+        date.setHours(0, 0, 0, 0);
+        const dateKey = date.toISOString();
+        const groupKey = `${customerId}_${dateKey}`;
 
-      return {
-        id: String(payment._id),
-        customerCode: customer?.customerCode || "",
-        customerName: customer?.name || "Unknown",
-        amount: payment.amount,
-        mode: payment.mode,
-        dateLabel: formatDateLabel(payment.date),
-        note: payment.note || "",
-      };
-    }),
+        if (!grouped.has(groupKey)) {
+          const profile = base.profiles.find((p) => String(p._id) === customerId);
+          const customer = customers.find((c) => c.customerCode === profile?.customerCode);
+
+          grouped.set(groupKey, {
+            customerId,
+            customerCode: customer?.customerCode || "",
+            customerName: customer?.name || "Unknown",
+            date,
+            dateLabel: formatDateLabel(payment.date),
+            totalAmount: 0,
+            transactions: [],
+          });
+        }
+
+        const group = grouped.get(groupKey);
+        group.totalAmount += payment.amount;
+        group.transactions.push({
+          id: String(payment._id),
+          amount: payment.amount,
+          mode: payment.mode,
+          note: payment.note || "",
+        });
+      }
+
+      return Array.from(grouped.values()).slice(0, 30);
+    })(),
   };
 }
 
@@ -1113,4 +1157,64 @@ export async function getDeliveryOperationOptions() {
     customers,
     products: products.filter((product) => product.isActive !== false),
   };
+}
+export async function getCustomerByUserId(userId: string) {
+  const base = await getBaseData();
+  const entity = buildCustomerEntities(base).find(
+    (entry) => String(entry.profile.userId) === userId
+  );
+
+  if (entity) {
+    return getCustomerDetailData(entity.profile.customerCode);
+  }
+
+  // Fallback: Direct query if not found in base data (e.g. newly created)
+  await connectToDatabase();
+  const profile = await CustomerProfile.findOne({ userId }).lean<PlainCustomerProfile | null>();
+  if (profile) {
+    // If we found it directly, we should still return the full detail.
+    // getCustomerDetailData will fetch getCustomerListData which might still be stale.
+    // So we'll try to return a minimal valid object if it's really new.
+    const detail = await getCustomerDetailData(profile.customerCode);
+    if (detail) return detail;
+
+    // Last resort: Build a minimal detail object for a new customer
+    const user = await User.findById(userId).lean<PlainUser | null>();
+    const plan = await MilkPlan.findOne({ customerId: profile._id, isActive: true }).lean<PlainMilkPlan | null>();
+    
+    return {
+      id: String(profile._id),
+      customerCode: profile.customerCode,
+      name: user?.name || profile.customerCode,
+      phone: user?.phone || "",
+      areaCode: profile.areaCode,
+      areaName: profile.areaName,
+      address: [profile.addressLine1, profile.addressLine2, profile.landmark].filter(Boolean).join(", "),
+      quantityLabel: `${(plan?.quantityLiters || 0).toFixed(1)} ${plan?.unitLabel || "L"}`,
+      quantity: plan?.quantityLiters || 0,
+      rate: plan?.pricePerLiter || 0,
+      due: 0,
+      billed: 0,
+      paid: 0,
+      notes: profile.notes || "",
+      deliveryInstruction: profile.deliveryInstruction || "",
+      deliverySlot: "Morning",
+      deliveryStatus: "PENDING",
+      extraQuantity: 0,
+      lastPaymentDate: null,
+      status: "ACTIVE",
+      preferredLanguage: user?.preferredLanguage || "en",
+      addressLine1: profile.addressLine1,
+      addressLine2: profile.addressLine2 || "",
+      landmark: profile.landmark || "",
+      recentDeliveries: [],
+      calendarData: {
+        monthLabel: new Intl.DateTimeFormat("en-IN", { month: "long", year: "numeric" }).format(new Date()),
+        leadingBlankSlots: new Date(new Date().getFullYear(), new Date().getMonth(), 1).getDay(),
+        days: []
+      }
+    };
+  }
+
+  return null;
 }

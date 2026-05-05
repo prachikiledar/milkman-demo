@@ -1,6 +1,6 @@
 {
   "brand": {
-    "name": "डेयरली",
+    "name": "डेयरी",
     "tagline": "हर सुबह ताज़ा दूध"
   },
   "common": {
@@ -79,7 +79,8 @@
     "history": "इतिहास",
     "subscriptions": "आपकी सदस्यताएं",
     "greeting": "नमस्ते, {name}",
-    "location": "डिलीवरी पता"
+    "location": "डिलीवरी पता",
+    "searchPlaceholder": "आपकी निर्धारित डिलीवरी रास्ते पर है।"
   },
   "nav": {
     "home": "होम",
@@ -93,7 +94,8 @@
     "customers": "ग्राहक",
     "deliveries": "डिलीवरी",
     "reports": "रिपोर्ट्स",
-    "newPlan": "नई योजना"
+    "newPlan": "नई योजना",
+    "login": "लॉगिन"
   },
   "status": {
     "active": "सक्रिय",
@@ -116,6 +118,7 @@
     "pendingDue": "बकाया राशि",
     "todaysStatus": "आज की स्थिति",
     "deliveryStatus": "डिलीवरी स्थिति: {status}",
+    "deliveryStatusLabel": "डिलीवरी की स्थिति",
     "planLine": "आपकी योजना {plan} है। इस महीने बिल: {billed}। बकाया: {due}।",
     "lastUpdate": "अंतिम अपडेट",
     "noUpdate": "अभी कोई अपडेट नहीं",
@@ -176,11 +179,17 @@
     "signOut": "साइन आउट"
   },
   "landing": {
-    "eyebrow": "डेयरली",
+    "eyebrow": "डेयरी",
     "title": "ताज़ा दूध, हर सुबह आपके दरवाज़े पर",
     "description": "जारी रखने के लिए सही अनुभव चुनें — अपनी दैनिक योजना देखें या सुबह का रूट चलाएँ।",
     "openAdmin": "एडमिन खोलें",
     "customerView": "ग्राहक व्यू",
+    "heroTitle": "ताज़ा दूध, हर सुबह आपके घर पर",
+    "heroSubtitle": "डिलीवरी, भुगतान और ग्राहकों को एक ही जगह पर आसानी से प्रबंधित करें।",
+    "startNow": "अभी शुरू करें",
+    "customerDesc": "अपनी दैनिक दूध डिलीवरी प्रबंधित करें, अपना डिलीवरी इतिहास देखें और भुगतान आसानी से ट्रैक करें।",
+    "adminDesc": "वेंडर्स के लिए पूर्ण नियंत्रण कक्ष। एक ही स्थान पर रूट्स, ग्राहकों और बिलिंग चक्रों को प्रबंधित करें।",
+    "copyright": "© 2026 डेयरी मॉडर्न डेयरी सिस्टम्स",
     "quickRoutes": "त्वरित रूट्स",
     "starterStatus": "",
     "statusItems": {
@@ -344,6 +353,10 @@
         "statusInactive": "निष्क्रिय",
         "languageEnglish": "English",
         "languageHindi": "हिंदी",
+        "languagePunjabi": "ਪੰਜਾਬੀ",
+        "deliveryInstruction": "डिलीवरी निर्देश",
+        "deliveryInstructionPlaceholder": "उदा. एक बार घंटी बजाएं और दरवाजे पर छोड़ दें",
+        "areaCodePlaceholder": "उदा. SC",
         "errorSave": "ग्राहक सहेजा नहीं जा सका"
       }
     },
@@ -463,8 +476,9 @@
       "paid": "भुगतान",
       "due": "बकाया",
       "ledgerLine": "{area} लेजर • {code}",
-      "recentEntriesTitle": "हाल की एंट्रीज़",
-      "recentEntriesSubtitle": "नवीनतम बिलिंग कार्य और संग्रहण",
+      "recentEntriesTitle": "हाल के भुगतान",
+      "recentEntriesSubtitle": "ग्राहकों से हाल ही में प्राप्त भुगतान",
+      "viewAllPayments": "सभी भुगतान देखें",
       "paymentTitle": "भुगतान दर्ज करें",
       "paymentSubtitle": "नकद, UPI या बैंक एंट्री जल्दी जोड़ें।",
       "paymentCustomer": "ग्राहक",

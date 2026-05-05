@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* =========================================================
-   DAIRLY — Design tokens
+   DAIRY — Design tokens
    Mobile-first, no phone chrome, scales to tablet/desktop.
    ========================================================= */
 :root {
@@ -57,7 +57,7 @@
   --s-8: 32px;
   --s-10: 40px;
 
-  /* Legacy aliases used around the project – map them to Dairly tokens */
+  /* Legacy aliases used around the project – map them to Dairy tokens */
   --background: var(--bg);
   --foreground: var(--ink-900);
   --surface-muted: var(--milk-100);
@@ -1382,7 +1382,7 @@ textarea {
 
 /* =========================================================
    Legacy helper classes still referenced by admin shell.
-   Mapped onto Dairly tokens.
+   Mapped onto Dairy tokens.
    ========================================================= */
 .public-shell {
   min-height: 100vh;
@@ -1409,7 +1409,7 @@ textarea {
   color: var(--ink-900);
 }
 
-/* Admin theme kept around for now (admin panel inherits Dairly palette) */
+/* Admin theme kept around for now (admin panel inherits Dairy palette) */
 .admin-theme {
   --admin-background: var(--bg);
   --admin-surface: var(--surface);

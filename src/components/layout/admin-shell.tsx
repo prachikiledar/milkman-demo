@@ -30,6 +30,7 @@ type AdminShellProps = {
   title: string;
   subtitle: string;
   hideHero?: boolean;
+  search?: React.ReactNode;
 };
 
 type NavKey =
@@ -71,6 +72,7 @@ export function AdminShell({
   title,
   subtitle,
   hideHero,
+  search,
 }: AdminShellProps) {
   const pathname = usePathname();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -246,14 +248,25 @@ export function AdminShell({
                     <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--admin-muted)] sm:text-[15px]">
                       {subtitle}
                     </p>
+                    {search && (
+                      <div className="mt-4 w-full sm:mt-0 sm:max-w-md">
+                        {search}
+                      </div>
+                    )}
                   </div>
-                  <div className="admin-panel-muted rounded-[22px] px-4 py-3 text-sm text-[var(--admin-muted)]">
-                    <span className="font-semibold text-[var(--admin-text)]">
-                      {tShell("liveMode")}
-                    </span>
-                    <span className="mx-2 text-[var(--admin-border)]">•</span>
-                    <span>{tShell("superAdminPreview")}</span>
-                  </div>
+                  {tShell("liveMode") && (
+                    <div className="admin-panel-muted rounded-[22px] px-4 py-3 text-sm text-[var(--admin-muted)]">
+                      <span className="font-semibold text-[var(--admin-text)]">
+                        {tShell("liveMode")}
+                      </span>
+                      {tShell("superAdminPreview") && (
+                        <>
+                          <span className="mx-2 text-[var(--admin-border)]">•</span>
+                          <span>{tShell("superAdminPreview")}</span>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
               </section>
             )}

@@ -20,6 +20,11 @@ export function LoginForm() {
 
   useEffect(() => {
     // Clear any old session when reaching the login page
+    const roles = ["ADMIN", "CUSTOMER"];
+    roles.forEach(role => {
+      localStorage.removeItem(`token_${role}`);
+      localStorage.removeItem(`user_${role}`);
+    });
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     window.dispatchEvent(new Event("storage"));
@@ -66,6 +71,11 @@ export function LoginForm() {
       const data = await res.json();
 
       if (res.ok) {
+        const roleKey = data.user.role; // e.g., "ADMIN" or "CUSTOMER"
+        localStorage.setItem(`token_${roleKey}`, data.token);
+        localStorage.setItem(`user_${roleKey}`, JSON.stringify(data.user));
+        
+        // Also keep legacy keys for compatibility if needed, but primary is role-based
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
 

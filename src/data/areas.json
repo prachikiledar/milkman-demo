@@ -1,22 +1,42 @@
 [
   {
     "code": "YAMUNA_APPARTMENT",
-    "name": "Yamuna Appartment"
+    "name": {
+      "en": "Yamuna Appartment",
+      "hi": "यमुना अपार्टमेंट",
+      "pa": "ਯਮੁਨਾ ਅਪਾਰਟਮੈਂਟ"
+    }
   },
   {
     "code": "GILCO_APPARTMENT",
-    "name": "Gilco Appartment"
+    "name": {
+      "en": "Gilco Appartment",
+      "hi": "गिलको अपार्टमेंट",
+      "pa": "ਗਿਲਕੋ ਅਪਾਰਟਮੈਂਟ"
+    }
   },
   {
     "code": "SHIVALIK_CITY",
-    "name": "Shivalik City"
+    "name": {
+      "en": "Shivalik City",
+      "hi": "शिवालिक सिटी",
+      "pa": "ਸ਼ਿਵਾਲਿਕ ਸਿਟੀ"
+    }
   },
   {
     "code": "KHARAR_MAIN_MARKET",
-    "name": "Kharar Main Market"
+    "name": {
+      "en": "Kharar Main Market",
+      "hi": "खरड़ मुख्य बाजार",
+      "pa": "ਖਰੜ ਮੇਨ ਮਾਰਕੀਟ"
+    }
   },
   {
     "code": "LANDRA",
-    "name": "Landra"
+    "name": {
+      "en": "Landra",
+      "hi": "लांड्रा",
+      "pa": "ਲਾਂਡਰਾ"
+    }
   }
 ]

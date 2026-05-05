@@ -140,7 +140,9 @@ export default async function AdminDashboardPage({
           <div className="mt-5 grid gap-3 md:grid-cols-3">
             {routeSnapshot.slice(0, 3).map((area) => (
               <article key={area.areaCode} className="admin-panel-muted rounded-[22px] px-4 py-4">
-                <p className="text-sm font-medium text-[var(--admin-muted)]">{area.areaName}</p>
+                <p className="text-sm font-medium text-[var(--admin-muted)]">
+                  {typeof area.areaName === "string" ? area.areaName : (area.areaName[locale as keyof typeof area.areaName] || area.areaName.en)}
+                </p>
                 <p className="mt-2 text-lg font-semibold text-[var(--admin-text)]">
                   {t("routeCustomers", { count: area.customerCount })}
                 </p>

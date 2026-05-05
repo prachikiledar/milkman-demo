@@ -12,7 +12,7 @@ type InteractiveCalendarProps = {
   locale: string;
   monthMeta: { monthLabel: string; leadingBlankSlots: number };
   days: CalendarDayRecord[];
-  areas: { code: string; name: string }[];
+  areas: { code: string; name: string | { en: string; hi: string; pa: string } }[];
   legendLabels: { delivered: string; paused: string; skipped: string };
 };
 
@@ -64,7 +64,7 @@ export function InteractiveCalendar({
               <option value="">All Areas</option>
               {areas.map((area) => (
                 <option key={area.code} value={area.code}>
-                  {area.name}
+                  {typeof area.name === "string" ? area.name : (area.name[locale as keyof typeof area.name] || area.name.en)}
                 </option>
               ))}
             </select>

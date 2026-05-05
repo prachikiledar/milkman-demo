@@ -1,6 +1,6 @@
 {
   "brand": {
-    "name": "Dairly",
+    "name": "Dairy",
     "tagline": "Fresh Milk, Every Morning"
   },
   "common": {
@@ -79,7 +79,8 @@
     "history": "History",
     "subscriptions": "Your Subscriptions",
     "greeting": "Hey, {name}",
-    "location": "Delivery address"
+    "location": "Delivery address",
+    "searchPlaceholder": "Your scheduled delivery is on the way."
   },
   "nav": {
     "home": "Home",
@@ -93,7 +94,8 @@
     "customers": "Customers",
     "deliveries": "Deliveries",
     "reports": "Reports",
-    "newPlan": "New plan"
+    "newPlan": "New plan",
+    "login": "Login"
   },
   "status": {
     "active": "Active",
@@ -116,6 +118,7 @@
     "pendingDue": "Pending due",
     "todaysStatus": "Today's Status",
     "deliveryStatus": "Delivery status: {status}",
+    "deliveryStatusLabel": "Delivery status",
     "planLine": "Your plan is {plan}. Billed this month: {billed}. Pending: {due}.",
     "lastUpdate": "Last update",
     "noUpdate": "No update yet",
@@ -176,11 +179,17 @@
     "signOut": "Sign out"
   },
   "landing": {
-    "eyebrow": "Dairly",
+    "eyebrow": "Dairy",
     "title": "Fresh milk, delivered every morning",
     "description": "Pick the right experience to continue — manage your daily plan or run the morning route.",
     "openAdmin": "Open Admin",
     "customerView": "Customer View",
+    "heroTitle": "Fresh milk, delivered to your home every morning",
+    "heroSubtitle": "Manage delivery, payments, and customers easily in one place.",
+    "startNow": "Start Now",
+    "customerDesc": "Manage your daily milk delivery, view your delivery history, and track payments effortlessly.",
+    "adminDesc": "Complete control panel for vendors. Manage routes, customers, and billing cycles in one place.",
+    "copyright": "© 2026 Dairy Modern Dairy Systems",
     "quickRoutes": "Quick Routes",
     "starterStatus": "",
     "statusItems": {
@@ -352,6 +361,10 @@
         "statusInactive": "Inactive",
         "languageEnglish": "English",
         "languageHindi": "Hindi",
+        "languagePunjabi": "Punjabi",
+        "deliveryInstruction": "Delivery Instruction",
+        "deliveryInstructionPlaceholder": "e.g. Ring once and leave at the door",
+        "areaCodePlaceholder": "e.g. SC",
         "errorSave": "Unable to save customer"
       }
     },
@@ -471,8 +484,9 @@
       "paid": "Paid",
       "due": "Due",
       "ledgerLine": "{area} ledger • {code}",
-      "recentEntriesTitle": "Recent entries",
-      "recentEntriesSubtitle": "Latest billing actions and collections",
+      "recentEntriesTitle": "Recent Payments",
+      "recentEntriesSubtitle": "Recently received payments from customers",
+      "viewAllPayments": "View All Payments",
       "paymentTitle": "Record payment",
       "paymentSubtitle": "Quickly add cash, UPI, or bank entries.",
       "paymentCustomer": "Customer",

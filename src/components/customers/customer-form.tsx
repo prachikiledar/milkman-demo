@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Minus, Plus } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   AdminButton,
   AdminCard,
@@ -44,6 +45,8 @@ export function CustomerForm({
   onSuccess,
 }: CustomerFormProps) {
   const router = useRouter();
+  const t = useTranslations("admin.customers.form");
+
   const defaults = useMemo(
     () => ({
       name: initialValues?.name || "",
@@ -71,7 +74,6 @@ export function CustomerForm({
     setForm((prev) => {
       const current = parseFloat(prev.quantityLiters) || 0;
       const next = Math.max(0, current + delta);
-      // Use Number() to remove trailing zeros if they exist (e.g. 2.50 -> 2.5)
       return { ...prev, quantityLiters: String(Number(next.toFixed(2))) };
     });
   };
@@ -102,7 +104,7 @@ export function CustomerForm({
       const data = (await response.json()) as { error?: string; profile?: { customerCode: string } };
 
       if (!response.ok) {
-        throw new Error(data.error || "Unable to save customer");
+        throw new Error(data.error || t("errorSave"));
       }
 
       if (onSuccess) {
@@ -116,7 +118,7 @@ export function CustomerForm({
       }
       router.refresh();
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "Unable to save customer");
+      setError(submitError instanceof Error ? submitError.message : t("errorSave"));
     } finally {
       setIsSubmitting(false);
     }
@@ -126,13 +128,13 @@ export function CustomerForm({
     <AdminCard>
       <div className="space-y-5">
         <div className="grid gap-4 sm:grid-cols-2">
-          <AdminField label="Customer name">
+          <AdminField label={t("customerName")}>
             <AdminInput
               value={form.name}
               onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
             />
           </AdminField>
-          <AdminField label="Phone number">
+          <AdminField label={t("phoneNumber")}>
             <AdminInput
               value={form.phone}
               onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value }))}
@@ -141,7 +143,7 @@ export function CustomerForm({
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <AdminField label="Preferred language">
+          <AdminField label={t("preferredLanguage")}>
             <AdminSelect
               value={form.preferredLanguage}
               onChange={(event) =>
@@ -151,22 +153,29 @@ export function CustomerForm({
                 }))
               }
             >
-              <option value="en">English</option>
-              <option value="hi">Hindi</option>
+              <option value="en">{t("languageEnglish")}</option>
+              <option value="hi">{t("languageHindi")}</option>
+              <option value="pa">{t("languagePunjabi")}</option>
             </AdminSelect>
           </AdminField>
-          <AdminField label="Area code">
-            <AdminInput
+          <AdminField label={t("areaCode")}>
+            <AdminSelect
               value={form.areaCode}
               onChange={(event) =>
                 setForm((current) => ({ ...current, areaCode: event.target.value }))
               }
-              placeholder="e.g. SC"
-            />
+            >
+              <option value="">Select Area</option>
+              {areas.map((area) => (
+                <option key={area.code} value={area.code}>
+                  {area.code} • {area.name}
+                </option>
+              ))}
+            </AdminSelect>
           </AdminField>
         </div>
 
-        <AdminField label="Address line 1">
+        <AdminField label={t("addressLine1")}>
           <AdminInput
             value={form.addressLine1}
             onChange={(event) =>
@@ -176,7 +185,7 @@ export function CustomerForm({
         </AdminField>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <AdminField label="Address line 2">
+          <AdminField label={t("addressLine2")}>
             <AdminInput
               value={form.addressLine2}
               onChange={(event) =>
@@ -184,7 +193,7 @@ export function CustomerForm({
               }
             />
           </AdminField>
-          <AdminField label="Landmark">
+          <AdminField label={t("landmark")}>
             <AdminInput
               value={form.landmark}
               onChange={(event) =>
@@ -195,7 +204,7 @@ export function CustomerForm({
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2">
-          <AdminField label="Milk quantity">
+          <AdminField label={t("milkQuantity")}>
             <div className="flex items-center gap-2 max-w-[200px]">
               <button
                 type="button"
@@ -224,7 +233,7 @@ export function CustomerForm({
               </button>
             </div>
           </AdminField>
-          <AdminField label="Rate per liter">
+          <AdminField label={t("ratePerLiter")}>
             <AdminInput
               value={form.pricePerLiter}
               onChange={(event) =>
@@ -232,7 +241,7 @@ export function CustomerForm({
               }
             />
           </AdminField>
-          <AdminField label="Unit">
+          <AdminField label={t("unit")}>
             <AdminInput
               value={form.unitLabel}
               onChange={(event) =>
@@ -240,7 +249,7 @@ export function CustomerForm({
               }
             />
           </AdminField>
-          <AdminField label="Status">
+          <AdminField label={t("status")}>
             <AdminSelect
               value={form.status}
               onChange={(event) =>
@@ -250,24 +259,24 @@ export function CustomerForm({
                 }))
               }
             >
-              <option value="ACTIVE">Active</option>
-              <option value="PAUSED">Paused</option>
-              <option value="INACTIVE">Inactive</option>
+              <option value="ACTIVE">{t("statusActive")}</option>
+              <option value="PAUSED">{t("statusPaused")}</option>
+              <option value="INACTIVE">{t("statusInactive")}</option>
             </AdminSelect>
           </AdminField>
         </div>
 
-        <AdminField label="Delivery Instruction (optional)">
+        <AdminField label={t("deliveryInstruction")}>
           <AdminInput
             value={form.deliveryInstruction}
             onChange={(event) =>
               setForm((current) => ({ ...current, deliveryInstruction: event.target.value }))
             }
-            placeholder="e.g. Ring once and leave at the door"
+            placeholder={t("deliveryInstructionPlaceholder")}
           />
         </AdminField>
 
-        <AdminField label="Internal note">
+        <AdminField label={t("internalNote")}>
           <AdminTextarea
             value={form.internalNote}
             onChange={(event) =>
@@ -284,7 +293,7 @@ export function CustomerForm({
 
         <div className="grid gap-2 sm:grid-cols-3">
           <AdminButton className="justify-center" onClick={handleSubmit} disabled={isSubmitting}>
-            {mode === "create" ? "Create customer" : "Save changes"}
+            {mode === "create" ? t("createCustomer") : t("saveChanges")}
           </AdminButton>
           <AdminButton
             variant="secondary"
@@ -292,7 +301,7 @@ export function CustomerForm({
             onClick={() => router.back()}
             disabled={isSubmitting}
           >
-            Cancel
+            {t("cancel")}
           </AdminButton>
           <AdminButton
             variant="outline"
@@ -300,7 +309,7 @@ export function CustomerForm({
             onClick={() => setForm(defaults)}
             disabled={isSubmitting}
           >
-            Reset
+            {t("reset")}
           </AdminButton>
         </div>
       </div>

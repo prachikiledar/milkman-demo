@@ -20,17 +20,17 @@ export default async function LocaleHomePage({ params }: LocaleHomePageProps) {
           {/* Left Content */}
           <div className="hero-content text-center lg:text-left">
             <h1 className="hero-title">
-              Fresh milk, delivered to your home every morning
+              {t("landing.heroTitle")}
             </h1>
             <p className="hero-subtitle">
-              Manage delivery, payments, and customers easily in one place.
+              {t("landing.heroSubtitle")}
             </p>
             <div className="flex justify-center lg:justify-start">
               <a
                 href="#options"
                 className="btn-brand flex h-14 items-center justify-center rounded-full px-10 text-base font-bold shadow-lg transition-all hover:scale-105 active:scale-95"
               >
-                Start Now
+                {t("landing.startNow")}
               </a>
             </div>
           </div>
@@ -73,7 +73,7 @@ export default async function LocaleHomePage({ params }: LocaleHomePageProps) {
             <div className="mt-4 sm:mt-8 flex-1">
               <h3 className="text-2xl font-extrabold text-slate-900">{t("landing.customerView")}</h3>
               <p className="mt-3 text-slate-500 leading-relaxed">
-                Manage your daily milk delivery, view your delivery history, and track payments effortlessly.
+                {t("landing.customerDesc")}
               </p>
             </div>
             <div className="mt-4 sm:mt-8 flex items-center gap-2 font-bold text-slate-900">
@@ -90,7 +90,7 @@ export default async function LocaleHomePage({ params }: LocaleHomePageProps) {
             <div className="mt-4 sm:mt-8 flex-1">
               <h3 className="text-2xl font-extrabold text-slate-900">{t("landing.openAdmin")}</h3>
               <p className="mt-3 text-slate-500 leading-relaxed">
-                Complete control panel for vendors. Manage routes, customers, and billing cycles in one place.
+                {t("landing.adminDesc")}
               </p>
             </div>
             <div className="mt-4 sm:mt-8 flex items-center gap-2 font-bold text-slate-900">
@@ -103,7 +103,7 @@ export default async function LocaleHomePage({ params }: LocaleHomePageProps) {
 
       {/* Footer / Info */}
       <footer className="mt-12 py-12 text-center text-slate-400">
-        <p className="text-sm font-medium tracking-wide uppercase">© 2026 Dairly Modern Dairy Systems</p>
+        <p className="text-sm font-medium tracking-wide uppercase">{t("landing.copyright")}</p>
       </footer>
     </main>
   );

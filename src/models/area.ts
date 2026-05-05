@@ -10,9 +10,9 @@ const areaSchema = new Schema(
       uppercase: true,
     },
     name: {
-      type: String,
-      required: true,
-      trim: true,
+      en: { type: String, required: true, trim: true },
+      hi: { type: String, trim: true },
+      pa: { type: String, trim: true },
     },
     isActive: {
       type: Boolean,

@@ -45,7 +45,10 @@ export default async function EditCustomerPage({ params }: EditCustomerPageProps
         locale={locale}
         mode="edit"
         customerCode={customer.customerCode}
-        areas={areas.map((area) => ({ code: area.code, name: area.name }))}
+        areas={areas.map((area) => ({ 
+          code: area.code, 
+          name: typeof area.name === "string" ? area.name : (area.name[locale as keyof typeof area.name] || area.name.en) 
+        }))}
         initialValues={{
           name: customer.name,
           phone: customer.phone,

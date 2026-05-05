@@ -43,7 +43,10 @@ export default async function NewCustomerPage({ params }: NewCustomerPageProps) 
         <CustomerForm
           locale={locale}
           mode="create"
-          areas={areas.map((area) => ({ code: area.code, name: area.name }))}
+          areas={areas.map((area) => ({ 
+            code: area.code, 
+            name: typeof area.name === "string" ? area.name : (area.name[locale as keyof typeof area.name] || area.name.en) 
+          }))}
         />
 
         <AdminCard>
