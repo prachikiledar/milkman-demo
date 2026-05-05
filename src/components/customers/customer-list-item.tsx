@@ -1,41 +1,54 @@
 "use client";
 
-import { useState } from "react";
-import { Minus, Plus, UserRound } from "lucide-react";
+import { CalendarDays, UserRound } from "lucide-react";
 import { AdminBadge } from "@/components/layout/admin-ui";
 import { cn, formatCurrencyINR } from "@/lib/utils";
 import { CustomerCardActions } from "./customer-card-actions";
+
+type CalendarDay = {
+  dateKey: string;
+  dateLabel: string;
+  dayOfMonth: number;
+  weekdayLabel: string;
+  liters: number;
+  status: "DELIVERED" | "SKIPPED" | "PAUSED" | "PENDING";
+  isFuture: boolean;
+};
 
 type CustomerListItemProps = {
   customer: {
     id: string;
     customerCode: string;
     name: string;
-    quantity: number;
-    quantityLabel: string;
-    due: number;
-    address: string;
+    phone: string;
     areaName: string;
-    status: "ACTIVE" | "PAUSED" | "INACTIVE";
-    lastPaymentDate?: Date | string | null;
+    quantity: number;
+    due: number;
+    lastPaymentDate: Date | null;
+    status: string;
+    calendarData?: {
+      monthLabel: string;
+      leadingBlankSlots: number;
+      days: CalendarDay[];
+    };
   };
   locale: string;
   tDue: string;
-  onView?: (mode: "view" | "details") => void;
+  onView?: (mode: "view" | "details" | "edit" | "schedule" | "calendar") => void;
   isMenuOpen: boolean;
   setMenuOpen: (isOpen: boolean) => void;
 };
 
-export function CustomerListItem({ 
-  customer, 
-  locale, 
-  tDue, 
+export function CustomerListItem({
+  customer,
+  locale,
+  tDue,
   onView,
   isMenuOpen,
-  setMenuOpen
+  setMenuOpen,
 }: CustomerListItemProps) {
-  const formatDateShort = (date: Date | string | null | undefined) => {
-    if (!date) return "N/A";
+  const formatDateShort = (date: Date | null) => {
+    if (!date) return "n/a";
     return new Intl.DateTimeFormat("en-IN", {
       day: "2-digit",
       month: "short",
@@ -43,7 +56,7 @@ export function CustomerListItem({
   };
 
   return (
-    <article 
+    <article
       className={cn(
         "admin-panel rounded-[22px] px-4 py-4 transition relative group",
         isMenuOpen ? "z-[60]" : "z-10",
@@ -80,8 +93,8 @@ export function CustomerListItem({
         <div className="flex-1 hidden sm:block" />
 
         {/* 3. Due & Actions Section (Right) */}
-        <div className="flex items-center justify-between sm:justify-end gap-6 pointer-events-auto sm:min-w-[200px]">
-          <div className="text-right">
+        <div className="flex items-center justify-between sm:justify-end gap-3 pointer-events-auto sm:min-w-[200px]">
+          <div className="flex flex-col items-start mr-3">
             <p
               className={cn(
                 "text-[15px] font-black tracking-tight",
@@ -91,19 +104,33 @@ export function CustomerListItem({
               {formatCurrencyINR(customer.due)}
             </p>
             <p className="text-[10px] font-bold uppercase text-gray-400 mt-0.5">
-              Due <span className="mx-1 text-gray-300">•</span> 
+              {tDue} <span className="mx-1 text-gray-300">•</span>
               <span className="text-gray-500 lowercase first-letter:uppercase">paid: {formatDateShort(customer.lastPaymentDate)}</span>
             </p>
           </div>
 
-          <CustomerCardActions 
-            id={customer.id}
-            customerCode={customer.customerCode} 
-            locale={locale} 
-            onView={onView}
-            isMenuOpen={isMenuOpen}
-            setMenuOpen={setMenuOpen}
-          />
+          <div className="flex items-center gap-4 flex-nowrap">
+            {/* Calendar Icon - Opens Modal */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onView?.('calendar');
+              }}
+              className="flex items-center justify-center h-11 w-11 rounded-2xl bg-white border border-gray-100 shadow-sm text-blue-600 hover:bg-blue-50 transition-all active:scale-95 group"
+              title="View Delivery Calendar"
+            >
+              <CalendarDays className="h-5 w-5 group-hover:scale-110 transition-transform" />
+            </button>
+
+            <CustomerCardActions
+              id={customer.id}
+              customerCode={customer.customerCode}
+              isMenuOpen={isMenuOpen}
+              setMenuOpen={setMenuOpen}
+              locale={locale}
+              onView={onView}
+            />
+          </div>
         </div>
       </div>
     </article>

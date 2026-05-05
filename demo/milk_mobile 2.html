@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Doodh Wala</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F0F4FF;
+  --card: #FFFFFF;
+  --blue: #2563EB;
+  --blue-dark: #1D4ED8;
+  --blue-light: #DBEAFE;
+  --teal: #0D9488;
+  --teal-light: #CCFBF1;
+  --amber: #D97706;
+  --amber-light: #FEF3C7;
+  --red: #DC2626;
+  --red-light: #FEE2E2;
+  --green: #16A34A;
+  --green-light: #DCFCE7;
+  --purple: #7C3AED;
+  --purple-light: #EDE9FE;
+  --text: #1E293B;
+  --text2: #64748B;
+  --text3: #94A3B8;
+  --border: #E2E8F0;
+  --radius: 18px;
+  --radius-sm: 12px;
+  --radius-xs: 8px;
+  --shadow: 0 2px 12px rgba(37,99,235,0.08);
+  --font: 'Nunito', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  height: 100%;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── SHELL ── */
+.shell {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  max-width: 430px;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+/* ── HEADER ── */
+.header {
+  background: var(--blue);
+  padding: 14px 18px 12px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+}
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.app-name {
+  font-size: 22px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: -0.5px;
+}
+.app-name span { color: #93C5FD; }
+.header-date { font-size: 12px; color: rgba(255,255,255,0.65); margin-top: 1px; }
+
+.milkman-pill {
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 20px;
+  padding: 5px 12px 5px 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  min-width: 0;
+}
+.milkman-pill .av {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: #93C5FD;
+  color: var(--blue-dark);
+  font-size: 10px;
+  font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.milkman-pill .name { font-size: 12px; color: #fff; font-weight: 600; max-width: 90px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.milkman-pill .chevron { color: rgba(255,255,255,0.6); font-size: 12px; }
+
+/* ── MILKMAN DROPDOWN ── */
+.mm-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%; right: 18px;
+  background: var(--card);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  z-index: 100;
+  min-width: 200px;
+  overflow: hidden;
+}
+.mm-dropdown.open { display: block; }
+.mm-dropdown-item {
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+.mm-dropdown-item:last-child { border-bottom: none; }
+.mm-dropdown-item:active { background: var(--blue-light); }
+.mm-dropdown-item.active { background: var(--blue-light); }
+.mm-dropdown-item .av2 {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 800;
+  flex-shrink: 0;
+}
+.mm-dropdown-item .info .n { font-size: 14px; font-weight: 700; color: var(--text); }
+.mm-dropdown-item .info .r { font-size: 11px; color: var(--text2); }
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  display: flex;
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+  flex-shrink: 0;
+  z-index: 10;
+}
+.nav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 0;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: var(--font);
+  transition: all 0.15s;
+}
+.nav-btn .icon { font-size: 22px; transition: transform 0.15s; }
+.nav-btn .label { font-size: 10px; font-weight: 700; color: var(--text3); letter-spacing: 0.3px; }
+.nav-btn.active .label { color: var(--blue); }
+.nav-btn.active .icon { transform: translateY(-2px); }
+.nav-icon-wrap {
+  position: relative;
+}
+.nav-badge {
+  position: absolute;
+  top: -4px; right: -6px;
+  background: var(--red);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 800;
+  border-radius: 10px;
+  padding: 1px 5px;
+  min-width: 16px;
+  text-align: center;
+}
+
+/* ── SCROLL AREA ── */
+.scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px 14px 8px;
+}
+.scroll-area::-webkit-scrollbar { display: none; }
+
+/* ── PAGES ── */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ── CARDS ── */
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+}
+.card-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.card-title-text { display: flex; align-items: center; gap: 6px; }
+
+/* ── METRICS ── */
+.metric-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.metric-box {
+  background: var(--card);
+  border-radius: var(--radius-sm);
+  padding: 14px 12px;
+  box-shadow: var(--shadow);
+}
+.metric-box .icon { font-size: 20px; margin-bottom: 6px; }
+.metric-box .val {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--text);
+  line-height: 1;
+}
+.metric-box .lbl { font-size: 11px; color: var(--text2); margin-top: 3px; font-weight: 600; }
+
+/* ── BADGES ── */
+.badge {
+  display: inline-flex; align-items: center;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.badge-green { background: var(--green-light); color: var(--green); }
+.badge-amber { background: var(--amber-light); color: var(--amber); }
+.badge-red { background: var(--red-light); color: var(--red); }
+.badge-blue { background: var(--blue-light); color: var(--blue); }
+.badge-purple { background: var(--purple-light); color: var(--purple); }
+
+/* ── AVATAR ── */
+.av {
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.av-sm { width: 36px; height: 36px; font-size: 13px; }
+.av-md { width: 44px; height: 44px; font-size: 16px; }
+.av-teal { background: var(--teal-light); color: var(--teal); }
+.av-blue { background: var(--blue-light); color: var(--blue); }
+.av-amber { background: var(--amber-light); color: var(--amber); }
+.av-purple { background: var(--purple-light); color: var(--purple); }
+.av-red { background: var(--red-light); color: var(--red); }
+
+/* ── CUSTOMER ROW ── */
+.cust-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--border);
+}
+.cust-row:last-child { border-bottom: none; }
+.cust-row .info { flex: 1; min-width: 0; }
+.cust-row .info .name { font-size: 14px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cust-row .info .sub { font-size: 11px; color: var(--text2); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ── QTY CONTROL ── */
+.qty-ctrl {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-xs);
+  overflow: hidden;
+  background: var(--card);
+}
+.qty-btn {
+  width: 32px; height: 32px;
+  background: var(--bg);
+  border: none;
+  font-size: 20px;
+  font-weight: 300;
+  color: var(--blue);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: background 0.1s;
+  flex-shrink: 0;
+}
+.qty-btn:active { background: var(--blue-light); }
+.qty-val {
+  min-width: 42px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text);
+  padding: 0 4px;
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  height: 32px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ── TOGGLE ── */
+.toggle-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.toggle {
+  position: relative;
+  width: 38px; height: 22px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.toggle input { opacity: 0; position: absolute; width: 0; height: 0; }
+.t-track {
+  position: absolute; inset: 0;
+  background: #CBD5E1;
+  border-radius: 22px;
+  transition: background 0.2s;
+}
+.toggle input:checked + .t-track { background: var(--amber); }
+.t-thumb {
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 16px; height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+.toggle input:checked ~ .t-thumb { transform: translateX(16px); }
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 10px 16px;
+  border-radius: var(--radius-xs);
+  font-size: 13px;
+  font-weight: 700;
+  font-family: var(--font);
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-decoration: none;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--blue); color: #fff; }
+.btn-teal { background: var(--teal); color: #fff; }
+.btn-green { background: var(--green); color: #fff; }
+.btn-wa { background: #22C55E; color: #fff; }
+.btn-sms { background: var(--blue-light); color: var(--blue); }
+.btn-ghost { background: var(--bg); color: var(--text); border: 1.5px solid var(--border); }
+.btn-danger { background: var(--red-light); color: var(--red); }
+.btn-full { width: 100%; border-radius: var(--radius-sm); padding: 14px; font-size: 15px; }
+.btn-sm { padding: 7px 12px; font-size: 12px; }
+
+/* ── FAB ── */
+.fab {
+  position: fixed;
+  bottom: 78px; right: 18px;
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: var(--blue);
+  color: #fff;
+  font-size: 26px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 20px rgba(37,99,235,0.4);
+  cursor: pointer;
+  border: none;
+  z-index: 50;
+  transition: transform 0.15s;
+}
+.fab:active { transform: scale(0.92); }
+
+/* ── SEARCH ── */
+.search-box {
+  position: relative;
+  margin-bottom: 12px;
+}
+.search-box input {
+  width: 100%;
+  padding: 11px 14px 11px 38px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  background: var(--card);
+  font-size: 14px;
+  font-family: var(--font);
+  color: var(--text);
+}
+.search-box input:focus { outline: none; border-color: var(--blue); }
+.search-box .si {
+  position: absolute;
+  left: 12px; top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  pointer-events: none;
+}
+
+/* ── FORMS ── */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 12px;
+}
+.form-group label { font-size: 12px; font-weight: 700; color: var(--text2); }
+.form-group input,
+.form-group select {
+  padding: 12px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-xs);
+  font-size: 15px;
+  font-family: var(--font);
+  color: var(--text);
+  background: #fff;
+  width: 100%;
+}
+.form-group input:focus,
+.form-group select:focus { outline: none; border-color: var(--blue); }
+.form-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* ── SHEET (bottom drawer) ── */
+.sheet-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 200;
+  align-items: flex-end;
+}
+.sheet-overlay.open { display: flex; }
+.sheet {
+  background: var(--card);
+  border-radius: 24px 24px 0 0;
+  padding: 0 18px max(20px, env(safe-area-inset-bottom));
+  width: 100%;
+  max-height: 88dvh;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.28s cubic-bezier(0.34,1.2,0.64,1);
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.sheet-handle {
+  width: 36px; height: 4px;
+  background: var(--border);
+  border-radius: 4px;
+  margin: 12px auto 14px;
+  flex-shrink: 0;
+}
+.sheet-title {
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--text);
+  margin-bottom: 16px;
+  flex-shrink: 0;
+}
+.sheet-scroll {
+  overflow-y: auto;
+  flex: 1;
+  -webkit-overflow-scrolling: touch;
+}
+.sheet-scroll::-webkit-scrollbar { display: none; }
+
+/* ── BILL PROGRESS ── */
+.bill-bar {
+  height: 5px;
+  background: var(--bg);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 5px;
+}
+.bill-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+/* ── HISTORY ── */
+.hist-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.hist-item:last-child { border-bottom: none; }
+.hist-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── ROUTE ITEM ── */
+.route-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  margin-bottom: 8px;
+  border: 1.5px solid transparent;
+  transition: border-color 0.15s;
+  cursor: grab;
+}
+.route-item.drag-over { border-color: var(--blue); background: var(--blue-light); }
+.route-num {
+  width: 26px; height: 26px;
+  background: var(--blue);
+  color: #fff;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 800;
+  flex-shrink: 0;
+}
+.drag-dots { color: var(--text3); font-size: 18px; margin-left: auto; }
+
+/* ── TOAST ── */
+.toast-wrap {
+  position: fixed;
+  bottom: 80px; left: 50%;
+  transform: translateX(-50%);
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  pointer-events: none;
+}
+.toast {
+  background: #1E293B;
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  animation: fadeInUp 0.25s ease;
+  border-left: 3px solid var(--teal);
+}
+.toast.warn { border-left-color: var(--amber); }
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── SECTION LABEL ── */
+.section-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  color: var(--text3);
+  text-transform: uppercase;
+  margin: 16px 0 8px;
+}
+
+/* ── MILKMAN CARD ── */
+.mm-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.mm-card .mm-stats { margin-left: auto; text-align: right; }
+.mm-card .mm-stats .sv { font-size: 16px; font-weight: 900; color: var(--text); }
+.mm-card .mm-stats .sl { font-size: 10px; color: var(--text3); font-weight: 700; }
+
+/* ── VACATION CHIP ── */
+.vac-chip {
+  background: repeating-linear-gradient(45deg,var(--amber-light),var(--amber-light) 5px,#fffbeb 5px,#fffbeb 10px);
+  color: var(--amber);
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+/* ── SAVE BAR ── */
+.save-bar {
+  position: sticky;
+  bottom: 0;
+  background: var(--bg);
+  padding: 10px 0 4px;
+  margin: 0 -14px;
+  padding-left: 14px;
+  padding-right: 14px;
+}
+
+/* ── HEADER STATS ── */
+.header-stats {
+  display: flex;
+  gap: 8px;
+}
+.h-stat {
+  flex: 1;
+  background: rgba(255,255,255,0.12);
+  border-radius: 12px;
+  padding: 8px 10px;
+}
+.h-stat .hv { font-size: 18px; font-weight: 900; color: #fff; }
+.h-stat .hl { font-size: 10px; color: rgba(255,255,255,0.65); font-weight: 700; margin-top: 1px; }
+
+/* route filter chips */
+.chip-row { display: flex; gap: 7px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 2px; }
+.chip-row::-webkit-scrollbar { display: none; }
+.chip {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1.5px solid var(--border);
+  background: var(--card);
+  color: var(--text2);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.chip.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <div class="app-name">Doodh<span>Wala</span> 🥛</div>
+        <div class="header-date" id="hdrDate"></div>
+      </div>
+      <div style="position:relative">
+        <div class="milkman-pill" onclick="toggleMmDrop()">
+          <div class="av" id="mmPillAv" style="width:24px;height:24px;font-size:10px;font-weight:800;background:#93C5FD;color:#1D4ED8"></div>
+          <div class="name" id="mmPillName"></div>
+          <div class="chevron">▾</div>
+        </div>
+        <div class="mm-dropdown" id="mmDrop"></div>
+      </div>
+    </div>
+    <div class="header-stats" id="hdrStats"></div>
+  </div>
+
+  <!-- SCROLL AREA -->
+  <div class="scroll-area" id="scrollArea">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dash">
+      <div class="metric-grid" id="dashMetrics"></div>
+      <div class="card">
+        <div class="card-title"><span class="card-title-text">🚴 Today's deliveries</span><span class="badge badge-blue" id="dashProgress"></span></div>
+        <div id="dashDelivList"></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="card-title-text">⏳ Pending payments</span></div>
+        <div id="dashPendingList"></div>
+      </div>
+    </div>
+
+    <!-- DELIVERY -->
+    <div class="page" id="page-delivery">
+      <div class="metric-grid" id="delivMetrics" style="grid-template-columns:1fr 1fr 1fr;gap:8px"></div>
+      <div class="card" style="padding:0">
+        <div style="padding:14px 14px 0" class="card-title">
+          <span class="card-title-text">📋 Delivery list</span>
+          <span id="vacBadge" class="badge badge-amber" style="display:none"></span>
+        </div>
+        <div id="delivList" style="padding:0 14px"></div>
+      </div>
+      <div class="save-bar">
+        <button class="btn btn-primary btn-full" onclick="saveDelivery()">✓ Save today's delivery</button>
+      </div>
+    </div>
+
+    <!-- CUSTOMERS -->
+    <div class="page" id="page-customers">
+      <div class="search-box">
+        <span class="si">🔍</span>
+        <input type="text" id="custSearch" placeholder="Search name, phone, address…" oninput="renderCustomers()">
+      </div>
+      <div class="chip-row" id="routeChips"></div>
+      <div id="custList"></div>
+    </div>
+
+    <!-- BILLING -->
+    <div class="page" id="page-billing">
+      <div class="metric-grid" style="grid-template-columns:1fr 1fr 1fr;gap:8px" id="billMetrics"></div>
+      <div class="chip-row" id="billRouteChips"></div>
+      <div id="billList"></div>
+    </div>
+
+    <!-- MORE -->
+    <div class="page" id="page-more">
+      <div class="section-label">Route planning</div>
+      <div class="card" style="padding:12px">
+        <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center">
+          <select id="routeSelect" onchange="renderRoute()" style="flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:var(--font);background:#fff;color:var(--text)">
+            <option value="Route A">Route A</option>
+            <option value="Route B">Route B</option>
+            <option value="Route C">Route C</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" onclick="autoSort()">⚡ Auto-sort</button>
+          <button class="btn btn-primary btn-sm" onclick="saveRoute()">Save</button>
+        </div>
+        <div id="routeList"></div>
+      </div>
+
+      <div class="section-label">Team — milkmen</div>
+      <div id="mmCards"></div>
+      <button class="btn btn-ghost btn-full" style="margin-bottom:12px" onclick="openSheet('addMilkman')">+ Add milkman</button>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" onclick="goPage('dash',this)">
+      <div class="nav-icon-wrap"><span class="icon">🏠</span></div>
+      <span class="label">Home</span>
+    </button>
+    <button class="nav-btn" onclick="goPage('delivery',this)">
+      <div class="nav-icon-wrap">
+        <span class="icon">🥛</span>
+        <span class="nav-badge" id="delivBadge" style="display:none"></span>
+      </div>
+      <span class="label">Delivery</span>
+    </button>
+    <button class="nav-btn" onclick="goPage('customers',this)">
+      <div class="nav-icon-wrap"><span class="icon">👥</span></div>
+      <span class="label">Customers</span>
+    </button>
+    <button class="nav-btn" onclick="goPage('billing',this)">
+      <div class="nav-icon-wrap">
+        <span class="icon">💰</span>
+        <span class="nav-badge" id="billBadge" style="display:none"></span>
+      </div>
+      <span class="label">Billing</span>
+    </button>
+    <button class="nav-btn" onclick="goPage('more',this)">
+      <div class="nav-icon-wrap"><span class="icon">☰</span></div>
+      <span class="label">More</span>
+    </button>
+  </nav>
+
+</div>
+
+<!-- FAB -->
+<button class="fab" id="fab" onclick="openSheet('addCustomer')">+</button>
+
+<!-- SHEETS -->
+
+<!-- Add Customer -->
+<div class="sheet-overlay" id="sheet-addCustomer">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Add customer</div>
+    <div class="sheet-scroll">
+      <div class="form-group"><label>Full name *</label><input type="text" id="nc-name" placeholder="e.g. Ramesh Sharma"></div>
+      <div class="form-group"><label>Phone number</label><input type="tel" id="nc-phone" placeholder="+91 98765 43210"></div>
+      <div class="form-group"><label>Address</label><input type="text" id="nc-addr" placeholder="House, street, area"></div>
+      <div class="form-2col">
+        <div class="form-group"><label>Daily qty (L)</label><input type="number" id="nc-qty" value="1" min="0.5" step="0.5"></div>
+        <div class="form-group"><label>Rate (₹/L)</label><input type="number" id="nc-rate" value="60"></div>
+      </div>
+      <div class="form-group"><label>Route</label>
+        <select id="nc-route"><option>Route A</option><option>Route B</option><option>Route C</option></select>
+      </div>
+      <button class="btn btn-primary btn-full" style="margin-top:4px;margin-bottom:8px" onclick="addCustomer()">Add customer</button>
+      <button class="btn btn-ghost btn-full" style="margin-bottom:8px" onclick="closeSheet('addCustomer')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Milkman -->
+<div class="sheet-overlay" id="sheet-addMilkman">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Add milkman</div>
+    <div class="sheet-scroll">
+      <div class="form-group"><label>Full name *</label><input type="text" id="nm-name" placeholder="e.g. Suresh Kumar"></div>
+      <div class="form-group"><label>Phone</label><input type="tel" id="nm-phone" placeholder="+91 98765 43210"></div>
+      <div class="form-group"><label>Assigned route</label>
+        <select id="nm-route"><option>Route A</option><option>Route B</option><option>Route C</option></select>
+      </div>
+      <button class="btn btn-primary btn-full" style="margin-top:4px;margin-bottom:8px" onclick="addMilkman()">Add milkman</button>
+      <button class="btn btn-ghost btn-full" style="margin-bottom:8px" onclick="closeSheet('addMilkman')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- History Sheet -->
+<div class="sheet-overlay" id="sheet-history">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="histTitle">Delivery history</div>
+    <div class="sheet-scroll" id="histContent"></div>
+  </div>
+</div>
+
+<!-- Collect Payment Sheet -->
+<div class="sheet-overlay" id="sheet-collect">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Collect payment</div>
+    <div class="sheet-scroll">
+      <div id="collectInfo"></div>
+      <div class="form-group" style="margin-top:12px"><label>Amount to collect (₹)</label><input type="number" id="collectAmt"></div>
+      <button class="btn btn-green btn-full" style="margin-top:4px;margin-bottom:8px" onclick="confirmCollect()">✓ Confirm payment</button>
+      <button class="btn btn-ghost btn-full" style="margin-bottom:8px" onclick="closeSheet('collect')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+// ══ DATA ══
+const milkmen = [
+  {id:0, name:'Raju Kumar', phone:'9876500001', route:'Route A'},
+  {id:1, name:'Suresh Yadav', phone:'9876500002', route:'Route B'},
+  {id:2, name:'Mohan Lal', phone:'9876500003', route:'Route C'},
+];
+const avClasses = ['av-teal','av-blue','av-amber','av-purple','av-red'];
+const avColors  = ['#0D9488','#2563EB','#D97706','#7C3AED','#DC2626'];
+
+let customers = [
+  {id:1,name:'Ramesh Sharma',phone:'9812345678',addr:'12, Gandhi Nagar',route:'Route A',qty:2,rate:60,onVac:false,collected:1200,order:1},
+  {id:2,name:'Priya Mehta',phone:'9823456789',addr:'5, Shanti Colony',route:'Route A',qty:1.5,rate:60,onVac:false,collected:2700,order:2},
+  {id:3,name:'Anil Verma',phone:'9834567890',addr:'88, MG Road',route:'Route B',qty:1,rate:65,onVac:false,collected:0,order:1},
+  {id:4,name:'Sunita Joshi',phone:'9845678901',addr:'3, Lal Kothi',route:'Route A',qty:2.5,rate:60,onVac:true,collected:1000,order:3},
+  {id:5,name:'Deepak Rao',phone:'9856789012',addr:'21, Vaishali Nagar',route:'Route B',qty:1,rate:65,onVac:false,collected:1950,order:2},
+  {id:6,name:'Kavita Singh',phone:'9867890123',addr:'7, Civil Lines',route:'Route C',qty:2,rate:60,onVac:false,collected:500,order:1},
+  {id:7,name:'Vijay Patel',phone:'9878901234',addr:'34, Tonk Road',route:'Route A',qty:1,rate:60,onVac:false,collected:1800,order:4},
+  {id:8,name:'Meena Gupta',phone:'9889012345',addr:'9, Malviya Nagar',route:'Route C',qty:1.5,rate:65,onVac:false,collected:0,order:2},
+];
+
+let todayQty = {};
+customers.forEach(c => todayQty[c.id] = c.onVac ? 0 : c.qty);
+
+const history = {};
+customers.forEach(c => {
+  history[c.id] = [];
+  for(let i=29;i>=1;i--){
+    const d=new Date(); d.setDate(d.getDate()-i);
+    const skip = c.onVac && i<5;
+    history[c.id].push({date:d.toLocaleDateString('en-IN',{day:'numeric',month:'short'}), qty:skip?0:c.qty});
+  }
+});
+
+let activeMM = 0;
+let currentCollectId = null;
+let selectedRouteFilter = '';
+let selectedBillRoute = '';
+const DAYS = 30;
+
+// ══ INIT ══
+window.onload = () => {
+  const now = new Date();
+  document.getElementById('hdrDate').textContent = now.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'});
+  buildMmDropdown();
+  updateMmPill();
+  renderAll();
+  buildRouteChips();
+  buildBillChips();
+  renderRoute();
+  renderMmCards();
+};
+
+function initials(name){ return name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(); }
+function monthly(c){ return c.qty*c.rate*DAYS; }
+function getRoute(){ return milkmen[activeMM].route; }
+function routeCusts(route){ return customers.filter(c=>c.route===route).sort((a,b)=>a.order-b.order); }
+
+function renderAll(){
+  renderDash();
+  renderDelivery();
+  renderCustomers();
+  renderBilling();
+  updateHeaderStats();
+  updateNavBadges();
+}
+
+// ══ MILKMAN ══
+function buildMmDropdown(){
+  const drop = document.getElementById('mmDrop');
+  drop.innerHTML = milkmen.map((mm,i)=>`
+    <div class="mm-dropdown-item ${i===activeMM?'active':''}" onclick="switchMM(${i})">
+      <div class="av2" style="width:32px;height:32px;font-size:12px;font-weight:800;background:${avColors[i]}22;color:${avColors[i]};border-radius:50%;display:flex;align-items:center;justify-content:center">${initials(mm.name)}</div>
+      <div class="info">
+        <div class="n">${mm.name}</div>
+        <div class="r">${mm.route}</div>
+      </div>
+      ${i===activeMM?'<span style="color:var(--blue);font-size:14px">✓</span>':''}
+    </div>
+  `).join('');
+}
+function toggleMmDrop(){
+  document.getElementById('mmDrop').classList.toggle('open');
+}
+function switchMM(i){
+  activeMM = i;
+  document.getElementById('mmDrop').classList.remove('open');
+  updateMmPill();
+  buildMmDropdown();
+  renderAll();
+}
+function updateMmPill(){
+  const mm = milkmen[activeMM];
+  document.getElementById('mmPillAv').textContent = initials(mm.name);
+  document.getElementById('mmPillName').textContent = mm.name.split(' ')[0];
+}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.milkman-pill') && !e.target.closest('.mm-dropdown'))
+    document.getElementById('mmDrop').classList.remove('open');
+});
+
+// ══ HEADER STATS ══
+function updateHeaderStats(){
+  const custs = routeCusts(getRoute()).filter(c=>!c.onVac);
+  const totalL = custs.reduce((s,c)=>s+(todayQty[c.id]||0),0);
+  const pending = customers.filter(c=>c.collected<monthly(c)).length;
+  document.getElementById('hdrStats').innerHTML = `
+    <div class="h-stat"><div class="hv">${totalL.toFixed(1)}L</div><div class="hl">Today's litres</div></div>
+    <div class="h-stat"><div class="hv">${custs.length}</div><div class="hl">Customers</div></div>
+    <div class="h-stat"><div class="hv">${pending}</div><div class="hl">Pending bills</div></div>
+  `;
+}
+
+// ══ NAV BADGES ══
+function updateNavBadges(){
+  const route = getRoute();
+  const active = routeCusts(route).filter(c=>!c.onVac);
+  const notDone = active.filter(c=>(todayQty[c.id]||0)===0).length;
+  const bd = document.getElementById('delivBadge');
+  bd.style.display = notDone>0 ? '' : 'none';
+  bd.textContent = notDone;
+  const pending = customers.filter(c=>c.collected<monthly(c)).length;
+  const bb = document.getElementById('billBadge');
+  bb.style.display = pending>0 ? '' : 'none';
+  bb.textContent = pending;
+}
+
+// ══ DASHBOARD ══
+function renderDash(){
+  const route = getRoute();
+  const rc = routeCusts(route);
+  const active = rc.filter(c=>!c.onVac);
+  const totalL = active.reduce((s,c)=>s+(todayQty[c.id]||0),0);
+  const totalRev = rc.reduce((s,c)=>s+monthly(c),0);
+  const totalColl = rc.reduce((s,c)=>s+c.collected,0);
+  const pending = rc.filter(c=>c.collected<monthly(c));
+  const done = active.filter(c=>(todayQty[c.id]||0)>0).length;
+
+  document.getElementById('dashMetrics').innerHTML = `
+    <div class="metric-box"><div class="icon">🥛</div><div class="val">${totalL.toFixed(1)}<small style="font-size:13px;font-weight:600;color:var(--text2)">L</small></div><div class="lbl">Litres today</div></div>
+    <div class="metric-box"><div class="icon">👥</div><div class="val">${active.length}</div><div class="lbl">Active today</div></div>
+    <div class="metric-box"><div class="icon">💵</div><div class="val" style="font-size:16px">₹${Math.round(totalRev).toLocaleString('en-IN')}</div><div class="lbl">Monthly rev.</div></div>
+    <div class="metric-box"><div class="icon">⏳</div><div class="val" style="color:var(--red)">${pending.length}</div><div class="lbl">Unpaid bills</div></div>
+  `;
+  document.getElementById('dashProgress').textContent = `${done}/${active.length} done`;
+
+  document.getElementById('dashDelivList').innerHTML = rc.length ? rc.map(c=>`
+    <div class="cust-row">
+      <div class="av av-sm ${avClasses[c.id%5]}">${initials(c.name)}</div>
+      <div class="info">
+        <div class="name">${c.name}</div>
+        <div class="sub">${c.addr}</div>
+      </div>
+      ${c.onVac ? '<span class="vac-chip">Vacation</span>' : `<span style="font-size:15px;font-weight:900;color:var(--teal)">${(todayQty[c.id]||0).toFixed(1)}L</span>`}
+    </div>
+  `).join('') : '<div style="text-align:center;color:var(--text3);padding:20px;font-size:13px">No customers on this route</div>';
+
+  document.getElementById('dashPendingList').innerHTML = pending.length ? pending.map(c=>{
+    const total=monthly(c), bal=total-c.collected, pct=Math.round((c.collected/total)*100);
+    return `<div style="padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <div style="font-size:13px;font-weight:700">${c.name}</div>
+        <div style="font-size:13px;font-weight:900;color:var(--red)">₹${Math.round(bal).toLocaleString('en-IN')}</div>
+      </div>
+      <div class="bill-bar"><div class="bill-bar-fill" style="width:${pct}%;background:${pct>50?'var(--amber)':'var(--red)'}"></div></div>
+      <div style="font-size:11px;color:var(--text3);margin-top:3px">₹${c.collected.toLocaleString('en-IN')} of ₹${Math.round(total).toLocaleString('en-IN')} collected</div>
+    </div>`;
+  }).join('') : '<div style="text-align:center;color:var(--teal);padding:20px;font-size:13px;font-weight:700">All payments collected! 🎉</div>';
+}
+
+// ══ DELIVERY ══
+function renderDelivery(){
+  const route = getRoute();
+  const rc = routeCusts(route);
+  const active = rc.filter(c=>!c.onVac);
+  const totalL = active.reduce((s,c)=>s+(todayQty[c.id]||0),0);
+  const totalBill = active.reduce((s,c)=>s+((todayQty[c.id]||0)*c.rate),0);
+  const onVac = rc.filter(c=>c.onVac);
+
+  const vb = document.getElementById('vacBadge');
+  vb.style.display = onVac.length ? '' : 'none';
+  vb.textContent = `${onVac.length} on vacation`;
+
+  document.getElementById('delivMetrics').innerHTML = `
+    <div class="metric-box" style="padding:10px 8px"><div class="icon" style="font-size:16px">🥛</div><div class="val" style="font-size:18px">${totalL.toFixed(1)}L</div><div class="lbl">Litres</div></div>
+    <div class="metric-box" style="padding:10px 8px"><div class="icon" style="font-size:16px">👥</div><div class="val" style="font-size:18px">${active.length}</div><div class="lbl">Active</div></div>
+    <div class="metric-box" style="padding:10px 8px"><div class="icon" style="font-size:16px">💵</div><div class="val" style="font-size:15px">₹${Math.round(totalBill).toLocaleString('en-IN')}</div><div class="lbl">Bill today</div></div>
+  `;
+
+  document.getElementById('delivList').innerHTML = rc.map(c=>`
+    <div class="cust-row">
+      <div class="av av-sm ${avClasses[c.id%5]}">${initials(c.name)}</div>
+      <div class="info">
+        <div class="name">${c.name}</div>
+        <div class="sub">${c.onVac ? '🏖️ On vacation' : c.addr.split(',')[0]}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0">
+        ${c.onVac ? '<span class="vac-chip">Skipped</span>' : `
+        <div class="qty-ctrl">
+          <button class="qty-btn" onclick="adjQty(${c.id},-0.5)">−</button>
+          <div class="qty-val" id="qv-${c.id}">${todayQty[c.id]||0}</div>
+          <button class="qty-btn" onclick="adjQty(${c.id},0.5)">+</button>
+        </div>`}
+        <label class="toggle" title="Vacation toggle" style="display:flex;align-items:center;gap:4px">
+          <input type="checkbox" ${c.onVac?'checked':''} onchange="toggleVac(${c.id},this.checked)">
+          <div class="t-track"></div>
+          <div class="t-thumb"></div>
+          <span style="font-size:10px;color:var(--text3);font-weight:700">VAC</span>
+        </label>
+      </div>
+    </div>
+  `).join('') || '<div style="text-align:center;color:var(--text3);padding:20px;font-size:13px">No customers on this route</div>';
+}
+
+function adjQty(id, delta){
+  todayQty[id] = Math.max(0, parseFloat(((todayQty[id]||0)+delta).toFixed(1)));
+  const el = document.getElementById('qv-'+id);
+  if(el) el.textContent = todayQty[id];
+  const active = routeCusts(getRoute()).filter(c=>!c.onVac);
+  const totalL = active.reduce((s,c)=>s+(todayQty[c.id]||0),0);
+  const el2 = document.querySelector('#delivMetrics .metric-box:first-child .val');
+  if(el2) el2.textContent = totalL.toFixed(1)+'L';
+  const totalBill = active.reduce((s,c)=>s+((todayQty[c.id]||0)*c.rate),0);
+  const el3 = document.querySelector('#delivMetrics .metric-box:last-child .val');
+  if(el3) el3.textContent = '₹'+Math.round(totalBill).toLocaleString('en-IN');
+  updateNavBadges();
+}
+
+function toggleVac(id, val){
+  const c = customers.find(x=>x.id===id);
+  c.onVac = val;
+  todayQty[id] = val ? 0 : c.qty;
+  renderDelivery();
+  updateNavBadges();
+  updateHeaderStats();
+  toast(val ? `${c.name.split(' ')[0]} set to vacation` : `${c.name.split(' ')[0]} resumed`, val?'warn':'');
+}
+
+function saveDelivery(){
+  const route = getRoute();
+  const today = new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+  routeCusts(route).forEach(c=>{
+    history[c.id] = history[c.id]||[];
+    history[c.id].push({date:today, qty:todayQty[c.id]||0});
+  });
+  toast('Delivery saved! ✓');
+  renderDash();
+}
+
+// ══ CUSTOMERS ══
+function buildRouteChips(){
+  const chips = document.getElementById('routeChips');
+  chips.innerHTML = `<div class="chip active" onclick="setRouteFilter('',this)">All</div>` +
+    ['Route A','Route B','Route C'].map(r=>`<div class="chip" onclick="setRouteFilter('${r}',this)">${r}</div>`).join('');
+}
+function setRouteFilter(route, el){
+  selectedRouteFilter = route;
+  document.querySelectorAll('#routeChips .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  renderCustomers();
+}
+
+function renderCustomers(){
+  const q = (document.getElementById('custSearch')?.value||'').toLowerCase();
+  const filtered = customers.filter(c=>
+    (!selectedRouteFilter || c.route===selectedRouteFilter) &&
+    (!q || c.name.toLowerCase().includes(q) || c.addr.toLowerCase().includes(q) || c.phone.includes(q))
+  );
+  document.getElementById('custList').innerHTML = filtered.length ? filtered.map(c=>{
+    const total=monthly(c), paid=c.collected>=total, partial=c.collected>0&&!paid;
+    const statusBadge = paid?'<span class="badge badge-green">Paid</span>':partial?'<span class="badge badge-amber">Partial</span>':'<span class="badge badge-red">Unpaid</span>';
+    return `<div class="card" style="padding:12px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div class="av av-md ${avClasses[c.id%5]}">${initials(c.name)}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:15px;font-weight:800;color:var(--text)">${c.name}</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:1px">${c.phone}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.addr}</div>
+        </div>
+        ${statusBadge}
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+        <span class="badge badge-blue">${c.route}</span>
+        <span class="badge" style="background:var(--teal-light);color:var(--teal)">${c.qty}L/day</span>
+        <span class="badge badge-purple">₹${c.rate}/L</span>
+        ${c.onVac?'<span class="vac-chip">Vacation</span>':''}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <button class="btn btn-ghost btn-sm" style="justify-content:center" onclick="openHistory(${c.id})">📋 History</button>
+        <button class="btn btn-ghost btn-sm" style="justify-content:center" onclick="openCollect(${c.id})">₹ Collect</button>
+      </div>
+    </div>`;
+  }).join('') : `<div style="text-align:center;color:var(--text3);padding:40px 20px;font-size:14px">No customers found</div>`;
+}
+
+// ══ HISTORY ══
+function openHistory(id){
+  const c = customers.find(x=>x.id===id);
+  const hist = history[id]||[];
+  document.getElementById('histTitle').textContent = `${c.name.split(' ')[0]}'s delivery log`;
+  const totalL = hist.reduce((s,h)=>s+h.qty,0);
+  const days = hist.filter(h=>h.qty>0).length;
+  document.getElementById('histContent').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">
+      <div style="background:var(--teal-light);border-radius:12px;padding:12px;text-align:center">
+        <div style="font-size:18px;font-weight:900;color:var(--teal)">${totalL.toFixed(1)}L</div>
+        <div style="font-size:10px;color:var(--teal);font-weight:700;margin-top:2px">This month</div>
+      </div>
+      <div style="background:var(--blue-light);border-radius:12px;padding:12px;text-align:center">
+        <div style="font-size:18px;font-weight:900;color:var(--blue)">${days}</div>
+        <div style="font-size:10px;color:var(--blue);font-weight:700;margin-top:2px">Days done</div>
+      </div>
+      <div style="background:var(--amber-light);border-radius:12px;padding:12px;text-align:center">
+        <div style="font-size:18px;font-weight:900;color:var(--amber)">${hist.length-days}</div>
+        <div style="font-size:10px;color:var(--amber);font-weight:700;margin-top:2px">Skipped</div>
+      </div>
+    </div>
+    <div style="font-size:12px;font-weight:800;color:var(--text3);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:8px">Last 30 days</div>
+    ${[...hist].reverse().map(h=>`
+      <div class="hist-item">
+        <div class="hist-dot" style="background:${h.qty>0?'var(--teal)':'#CBD5E1'}"></div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700">${h.date}</div>
+          <div style="font-size:11px;color:var(--text3)">${h.qty>0?'Delivered':'Not delivered'}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:14px;font-weight:800;color:${h.qty>0?'var(--teal)':'var(--text3)'}">${h.qty>0?h.qty+'L':'—'}</div>
+          <div style="font-size:11px;color:var(--text3)">₹${Math.round(h.qty*c.rate)}</div>
+        </div>
+      </div>
+    `).join('')}
+    <div style="height:8px"></div>
+  `;
+  openSheet('history');
+}
+
+// ══ BILLING ══
+function buildBillChips(){
+  const chips = document.getElementById('billRouteChips');
+  chips.innerHTML = `<div class="chip active" onclick="setBillRoute('',this)">All routes</div>` +
+    ['Route A','Route B','Route C'].map(r=>`<div class="chip" onclick="setBillRoute('${r}',this)">${r}</div>`).join('');
+}
+function setBillRoute(route, el){
+  selectedBillRoute = route;
+  document.querySelectorAll('#billRouteChips .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  renderBilling();
+}
+
+function renderBilling(){
+  const filtered = customers.filter(c=> !selectedBillRoute || c.route===selectedBillRoute);
+  const totalDue = filtered.reduce((s,c)=>s+monthly(c),0);
+  const totalColl = filtered.reduce((s,c)=>s+c.collected,0);
+  const totalBal = totalDue-totalColl;
+
+  document.getElementById('billMetrics').innerHTML = `
+    <div class="metric-box" style="padding:10px 8px"><div class="icon" style="font-size:16px">📋</div><div class="val" style="font-size:15px">₹${Math.round(totalDue).toLocaleString('en-IN')}</div><div class="lbl">Billed</div></div>
+    <div class="metric-box" style="padding:10px 8px"><div class="icon" style="font-size:16px">✅</div><div class="val" style="font-size:15px;color:var(--teal)">₹${Math.round(totalColl).toLocaleString('en-IN')}</div><div class="lbl">Collected</div></div>
+    <div class="metric-box" style="padding:10px 8px"><div class="icon" style="font-size:16px">⏳</div><div class="val" style="font-size:15px;color:var(--red)">₹${Math.round(totalBal).toLocaleString('en-IN')}</div><div class="lbl">Pending</div></div>
+  `;
+
+  document.getElementById('billList').innerHTML = filtered.map(c=>{
+    const total=monthly(c), bal=total-c.collected, pct=Math.min(Math.round((c.collected/total)*100),100);
+    const paid=bal<=0, partial=c.collected>0&&!paid;
+    const statusBadge = paid?'<span class="badge badge-green">Paid</span>':partial?'<span class="badge badge-amber">Partial</span>':'<span class="badge badge-red">Unpaid</span>';
+    const waText = encodeURIComponent(`Hi ${c.name}, your milk bill for this month is ₹${Math.round(total).toLocaleString('en-IN')}. Balance due: ₹${Math.round(bal).toLocaleString('en-IN')}. Please pay at your earliest convenience. Thank you! 🥛`);
+    const smsText = encodeURIComponent(`Milk bill: ₹${Math.round(total)}. Due: ₹${Math.round(bal)}. Please pay soon. -DoodhWala`);
+    return `<div class="card" style="padding:14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div class="av av-sm ${avClasses[c.id%5]}">${initials(c.name)}</div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:800">${c.name}</div>
+          <div style="font-size:11px;color:var(--text2)">${c.route} · ${c.qty}L/day × ₹${c.rate}</div>
+        </div>
+        ${statusBadge}
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
+        <span style="color:var(--text2)">Total bill</span>
+        <span style="font-weight:800">₹${Math.round(total).toLocaleString('en-IN')}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
+        <span style="color:var(--text2)">Collected</span>
+        <span style="font-weight:700;color:var(--teal)">₹${c.collected.toLocaleString('en-IN')}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px">
+        <span style="color:var(--text2)">Balance due</span>
+        <span style="font-weight:900;color:${paid?'var(--teal)':'var(--red)'}">₹${Math.max(0,Math.round(bal)).toLocaleString('en-IN')}</span>
+      </div>
+      <div class="bill-bar" style="margin-bottom:10px">
+        <div class="bill-bar-fill" style="width:${pct}%;background:${paid?'var(--teal)':partial?'var(--amber)':'var(--red)'}"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+        <a href="https://wa.me/91${c.phone}?text=${waText}" target="_blank" class="btn btn-wa btn-sm" style="justify-content:center">📱 WA</a>
+        <a href="sms:${c.phone}?body=${smsText}" class="btn btn-sms btn-sm" style="justify-content:center">💬 SMS</a>
+        ${!paid?`<button class="btn btn-ghost btn-sm" style="justify-content:center" onclick="openCollect(${c.id})">₹ Pay</button>`:'<div></div>'}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ══ COLLECT ══
+function openCollect(id){
+  currentCollectId = id;
+  const c = customers.find(x=>x.id===id);
+  const total=monthly(c), bal=Math.max(0,total-c.collected);
+  document.getElementById('collectInfo').innerHTML = `
+    <div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:4px">
+      <div style="font-size:16px;font-weight:800;margin-bottom:10px">${c.name}</div>
+      <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px">
+        <span style="color:var(--text2)">Monthly bill</span><strong>₹${Math.round(total).toLocaleString('en-IN')}</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px">
+        <span style="color:var(--text2)">Collected</span><strong style="color:var(--teal)">₹${c.collected.toLocaleString('en-IN')}</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:14px">
+        <span style="color:var(--text2)">Balance due</span><strong style="color:var(--red)">₹${Math.round(bal).toLocaleString('en-IN')}</strong>
+      </div>
+    </div>
+  `;
+  document.getElementById('collectAmt').value = Math.round(bal);
+  openSheet('collect');
+}
+
+function confirmCollect(){
+  const c = customers.find(x=>x.id===currentCollectId);
+  const amt = parseFloat(document.getElementById('collectAmt').value)||0;
+  c.collected = Math.min(c.collected+amt, monthly(c));
+  closeSheet('collect');
+  toast(`₹${amt.toLocaleString('en-IN')} collected from ${c.name.split(' ')[0]}`);
+  renderAll();
+}
+
+// ══ ROUTE ══
+function renderRoute(){
+  const route = document.getElementById('routeSelect')?.value||'Route A';
+  const rc = routeCusts(route);
+  document.getElementById('routeList').innerHTML = rc.length ? rc.map((c,i)=>`
+    <div class="route-item" draggable="true" data-id="${c.id}">
+      <div class="route-num">${i+1}</div>
+      <div class="av av-sm ${avClasses[c.id%5]}" style="width:30px;height:30px;font-size:11px">${initials(c.name)}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.name}</div>
+        <div style="font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.addr}</div>
+      </div>
+      ${c.onVac?'<span class="vac-chip">Vac</span>':`<span style="font-size:12px;font-weight:800;color:var(--teal)">${c.qty}L</span>`}
+      <div class="drag-dots">⠿</div>
+    </div>
+  `).join('') : '<div style="text-align:center;color:var(--text3);padding:20px;font-size:13px">No customers</div>';
+  initDragSort();
+}
+
+function autoSort(){
+  const route = document.getElementById('routeSelect')?.value||'Route A';
+  customers.filter(c=>c.route===route).sort((a,b)=>a.addr.localeCompare(b.addr)).forEach((c,i)=>c.order=i+1);
+  renderRoute();
+  toast('Auto-sorted by address ⚡');
+}
+
+function saveRoute(){ toast('Route order saved ✓'); }
+
+function initDragSort(){
+  const list = document.getElementById('routeList');
+  let dragged = null;
+  list.querySelectorAll('.route-item').forEach(item=>{
+    item.addEventListener('dragstart',()=>{dragged=item;item.style.opacity='0.4';});
+    item.addEventListener('dragend',()=>{item.style.opacity='1';list.querySelectorAll('.route-item').forEach(el=>el.classList.remove('drag-over'));});
+    item.addEventListener('dragover',e=>{e.preventDefault();list.querySelectorAll('.route-item').forEach(el=>el.classList.remove('drag-over'));item.classList.add('drag-over');});
+    item.addEventListener('drop',e=>{
+      e.preventDefault();
+      if(dragged&&dragged!==item){
+        const all=[...list.querySelectorAll('.route-item')];
+        const di=all.indexOf(dragged),ti=all.indexOf(item);
+        if(di<ti) item.after(dragged); else item.before(dragged);
+        list.querySelectorAll('.route-item').forEach((el,i)=>{
+          const id=parseInt(el.dataset.id);
+          const c=customers.find(x=>x.id===id);
+          if(c) c.order=i+1;
+          el.querySelector('.route-num').textContent=i+1;
+          el.classList.remove('drag-over');
+        });
+      }
+    });
+  });
+}
+
+// ══ MILKMEN CARDS ══
+function renderMmCards(){
+  document.getElementById('mmCards').innerHTML = milkmen.map((mm,i)=>{
+    const rc = customers.filter(c=>c.route===mm.route);
+    const totalL = rc.filter(c=>!c.onVac).reduce((s,c)=>s+c.qty,0);
+    const rev = rc.reduce((s,c)=>s+monthly(c),0);
+    return `<div class="mm-card">
+      <div class="av av-md ${avClasses[i]}">${initials(mm.name)}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:15px;font-weight:800">${mm.name}</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:2px">${mm.route} · ${mm.phone}</div>
+        <div style="margin-top:6px"><span class="badge badge-blue">${rc.length} customers</span></div>
+      </div>
+      <div class="mm-stats">
+        <div class="sv">${totalL.toFixed(1)}L</div><div class="sl">daily</div>
+        <div class="sv" style="margin-top:6px;font-size:14px">₹${Math.round(rev/1000).toFixed(1)}K</div><div class="sl">monthly</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ══ ADD CUSTOMER ══
+function addCustomer(){
+  const name = document.getElementById('nc-name').value.trim();
+  if(!name){ toast('Please enter a name','warn'); return; }
+  const id = Date.now();
+  const route = document.getElementById('nc-route').value;
+  customers.push({
+    id, name,
+    phone: document.getElementById('nc-phone').value.trim()||'N/A',
+    addr: document.getElementById('nc-addr').value.trim()||'—',
+    route, qty: parseFloat(document.getElementById('nc-qty').value)||1,
+    rate: parseFloat(document.getElementById('nc-rate').value)||60,
+    onVac:false, collected:0, order:customers.filter(c=>c.route===route).length+1
+  });
+  todayQty[id] = customers[customers.length-1].qty;
+  history[id] = [];
+  ['nc-name','nc-phone','nc-addr'].forEach(id=>document.getElementById(id).value='');
+  closeSheet('addCustomer');
+  toast(`${name} added! ✓`);
+  renderAll();
+  renderCustomers();
+}
+
+// ══ ADD MILKMAN ══
+function addMilkman(){
+  const name = document.getElementById('nm-name').value.trim();
+  if(!name){ toast('Please enter a name','warn'); return; }
+  const route = document.getElementById('nm-route').value;
+  milkmen.push({id:milkmen.length, name, phone:document.getElementById('nm-phone').value.trim(), route});
+  closeSheet('addMilkman');
+  toast(`${name} added to team ✓`);
+  renderMmCards();
+  buildMmDropdown();
+}
+
+// ══ NAVIGATION ══
+function goPage(name, btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('scrollArea').scrollTop = 0;
+  const fab = document.getElementById('fab');
+  fab.style.display = ['dash','customers'].includes(name) ? 'flex' : 'none';
+  if(name==='customers') renderCustomers();
+  if(name==='billing') renderBilling();
+  if(name==='more'){ renderRoute(); renderMmCards(); }
+}
+
+// ══ SHEETS ══
+function openSheet(name){ document.getElementById('sheet-'+name).classList.add('open'); }
+function closeSheet(name){ document.getElementById('sheet-'+name).classList.remove('open'); }
+document.querySelectorAll('.sheet-overlay').forEach(el=>{
+  el.addEventListener('click',e=>{ if(e.target===el) el.classList.remove('open'); });
+});
+
+// ══ TOAST ══
+function toast(msg, type=''){
+  const wrap = document.getElementById('toastWrap');
+  const t = document.createElement('div');
+  t.className = 'toast'+(type?' '+type:'');
+  t.textContent = msg;
+  wrap.appendChild(t);
+  setTimeout(()=>t.remove(), 2800);
+}
+</script>
+</body>
+</html>

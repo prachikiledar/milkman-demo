@@ -4,18 +4,17 @@ import { connectToDatabase } from "@/lib/db/connect";
 import { CustomerProfile } from "@/models/customer-profile";
 import { MilkPlan } from "@/models/milk-plan";
 
-type RouteContext = {
-  params: Promise<{ customerCode: string }>;
-};
-
 const quantitySchema = z.object({
   quantityLiters: z.number().nonnegative(),
 });
 
-export async function PATCH(request: Request, context: RouteContext) {
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ customerCode: string }> }
+) {
   try {
     await connectToDatabase();
-    const { customerCode } = await context.params;
+    const { customerCode } = await params;
     const body = await request.json();
     const { quantityLiters } = quantitySchema.parse(body);
 

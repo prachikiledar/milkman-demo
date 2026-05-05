@@ -43,6 +43,10 @@ const customerProfileSchema = new Schema(
       type: String,
       trim: true,
     },
+    deliveryInstruction: {
+      type: String,
+      trim: true,
+    },
     notes: {
       type: String,
       trim: true,

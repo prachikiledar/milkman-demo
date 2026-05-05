@@ -11,14 +11,13 @@ const areaSchema = z.object({
   isActive: z.boolean().optional(),
 });
 
-type RouteContext = {
-  params: Promise<{ areaCode: string }>;
-};
-
-export async function GET(_: Request, context: RouteContext) {
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ areaCode: string }> }
+) {
   try {
     await connectToDatabase();
-    const { areaCode } = await context.params;
+    const { areaCode } = await params;
 
     const area = await Area.findOne({ code: areaCode }).lean();
 
@@ -42,10 +41,13 @@ export async function GET(_: Request, context: RouteContext) {
   }
 }
 
-export async function PUT(request: Request, context: RouteContext) {
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ areaCode: string }> }
+) {
   try {
     await connectToDatabase();
-    const { areaCode } = await context.params;
+    const { areaCode } = await params;
     const payload = areaSchema.parse(await request.json());
     const nextCode = normalizeAreaCode(payload.code || payload.name);
 
@@ -99,10 +101,13 @@ export async function PUT(request: Request, context: RouteContext) {
   }
 }
 
-export async function DELETE(_: Request, context: RouteContext) {
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ areaCode: string }> }
+) {
   try {
     await connectToDatabase();
-    const { areaCode } = await context.params;
+    const { areaCode } = await params;
 
     const linkedCustomers = await CustomerProfile.countDocuments({ areaCode });
 

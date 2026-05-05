@@ -79,95 +79,81 @@ export default async function CustomerCalendarPage({
             })}
           </div>
         </article>
-      </div>
-
-      <div className="mt-3">
-        <article className="card">
-          <div className="card-row">
-            <div className="thumb sun">
-              <CircleDollarSign className="h-5 w-5" />
-            </div>
-            <div className="flex-1">
-              <div className="card-title">{t("calendar.estimatedBill")}</div>
-              <div className="card-sub">{t("calendar.estimateHint")}</div>
-            </div>
-            <div className="text-lg xbold">{formatCurrencyINR(summary.estimatedBill)}</div>
+        <article className="stat">
+          <div className="stat-label">{t("calendar.estimatedBill")}</div>
+          <div className="stat-value">{formatCurrencyINR(summary.estimatedBill)}</div>
+          <div className="trend">{t("calendar.estimateHint")}</div>
+        </article>
+        <article className="stat">
+          <div className="stat-label">{t("calendar.avgPerDay")}</div>
+          <div className="stat-value">
+            {(summary.totalLiters / Math.max(summary.deliveredDays, 1)).toFixed(1)} {t("common.liters")}
           </div>
+          <div className="trend">{t("calendar.billingRate")}: {formatCurrencyINR(customer.rate)}</div>
         </article>
       </div>
 
-      {/* Calendar */}
       <div className="section-head">
         <h3>{t("calendar.headline")}</h3>
       </div>
-      <section className="card">
-        <div className="row between mb-3">
-          <div className="card-sub">
-            {t("calendar.headlineHint", { month: monthMeta.monthLabel })}
-          </div>
-          <div className="row gap-2 text-xs">
-            <span className="chip mint">
-              <span className="status-dot mint" />
-              {t("calendar.legend.delivered")}
-            </span>
-          </div>
-        </div>
-        <MonthGrid
-          monthLabel={monthMeta.monthLabel}
-          leadingBlankSlots={monthMeta.leadingBlankSlots}
-          days={processedDays}
-          variant="customer"
-          showLegend={false}
-          renderFooter={(day) => (
-            <>
-              <div>{day.dateLabel}</div>
-              <div>{t("calendar.addOns", { count: day.itemCount ?? 0 })}</div>
-            </>
-          )}
-        />
-        <div className="row gap-2 mt-3" style={{ flexWrap: "wrap" }}>
-          <span className="chip mint"><span className="status-dot mint" />{t("calendar.legend.delivered")}</span>
-          <span className="chip sun"><span className="status-dot sun" />{t("calendar.legend.paused")}</span>
-          <span className="chip rose"><span className="status-dot rose" />{t("calendar.legend.skipped")}</span>
-        </div>
-      </section>
 
-      {/* Secondary stats */}
-      <div className="section-head">
-        <h3>{t("calendar.avgPerDay")}</h3>
+      {/* Calendar + side panel — side-by-side from tablet up */}
+      <div className="split-2 split-2-wide">
+        <section className="card">
+          <div className="row between mb-3">
+            <div className="card-sub">
+              {t("calendar.headlineHint", { month: monthMeta.monthLabel })}
+            </div>
+          </div>
+          <MonthGrid
+            monthLabel={monthMeta.monthLabel}
+            leadingBlankSlots={monthMeta.leadingBlankSlots}
+            days={processedDays}
+            variant="customer"
+            showLegend={false}
+          />
+          <div className="row gap-2 mt-3" style={{ flexWrap: "wrap" }}>
+            <span className="chip mint"><span className="status-dot mint" />{t("calendar.legend.delivered")}</span>
+            <span className="chip sun"><span className="status-dot sun" />{t("calendar.legend.paused")}</span>
+            <span className="chip rose"><span className="status-dot rose" />{t("calendar.legend.skipped")}</span>
+          </div>
+        </section>
+
+        <div className="stack gap-3">
+          <article className="list-item">
+            <div className="thumb">
+              <Droplets className="h-5 w-5" />
+            </div>
+            <div className="meta">
+              <strong>{t("calendar.avgPerDay")}</strong>
+              <span>
+                {(summary.totalLiters / Math.max(summary.deliveredDays, 1)).toFixed(1)}{" "}
+                {t("common.liters")}
+              </span>
+            </div>
+          </article>
+          <article className="list-item">
+            <div className="thumb sun">
+              <CalendarClock className="h-5 w-5" />
+            </div>
+            <div className="meta">
+              <strong>{t("calendar.pausedDays")}</strong>
+              <span>{t("calendar.pausedCount", { count: summary.pausedDays })}</span>
+            </div>
+          </article>
+          <article className="list-item">
+            <div className="thumb mint">
+              <CircleDollarSign className="h-5 w-5" />
+            </div>
+            <div className="meta">
+              <strong>{t("calendar.billingRate")}</strong>
+              <span>
+                {t("calendar.perLiter", { amount: formatCurrencyINR(customer.rate) })}
+              </span>
+            </div>
+          </article>
+        </div>
       </div>
-      <article className="list-item">
-        <div className="thumb">
-          <Droplets className="h-5 w-5" />
-        </div>
-        <div className="meta">
-          <strong>{t("calendar.avgPerDay")}</strong>
-          <span>
-            {(summary.totalLiters / Math.max(summary.deliveredDays, 1)).toFixed(1)}{" "}
-            {t("common.liters")}
-          </span>
-        </div>
-      </article>
-      <article className="list-item">
-        <div className="thumb sun">
-          <CalendarClock className="h-5 w-5" />
-        </div>
-        <div className="meta">
-          <strong>{t("calendar.pausedDays")}</strong>
-          <span>{t("calendar.pausedCount", { count: summary.pausedDays })}</span>
-        </div>
-      </article>
-      <article className="list-item">
-        <div className="thumb mint">
-          <CircleDollarSign className="h-5 w-5" />
-        </div>
-        <div className="meta">
-          <strong>{t("calendar.billingRate")}</strong>
-          <span>
-            {t("calendar.perLiter", { amount: formatCurrencyINR(customer.rate) })}
-          </span>
-        </div>
-      </article>
     </CustomerShell>
   );
 }

@@ -12,14 +12,13 @@ const milkEntrySchema = z.object({
   status: z.enum(["PAID", "UNPAID"]),
 });
 
-type RouteContext = {
-  params: Promise<{ entryId: string }>;
-};
-
-export async function PUT(request: Request, context: RouteContext) {
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ entryId: string }> }
+) {
   try {
     await connectToDatabase();
-    const { entryId } = await context.params;
+    const { entryId } = await params;
     const payload = milkEntrySchema.parse(await request.json());
 
     const [entry, vendor] = await Promise.all([
@@ -55,9 +54,12 @@ export async function PUT(request: Request, context: RouteContext) {
   }
 }
 
-export async function DELETE(_: Request, context: RouteContext) {
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ entryId: string }> }
+) {
   await connectToDatabase();
-  const { entryId } = await context.params;
+  const { entryId } = await params;
   const deleted = await MilkEntry.findByIdAndDelete(entryId).lean();
 
   if (!deleted) {

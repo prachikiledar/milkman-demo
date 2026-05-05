@@ -73,14 +73,13 @@ export function CustomerCardActions({
                   <BarChart2 className="h-4.5 w-4.5 text-gray-400" />
                   Details
                 </button>
-                <Link
-                  href={`/${locale}/admin/customers/${id}/edit`}
+                <button
+                  onClick={() => { setMenuOpen?.(false); onView?.("edit" as any); }}
                   className="flex w-full items-center gap-3 px-4 py-3 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
-                  onClick={() => setMenuOpen?.(false)}
                 >
                   <FilePenLine className="h-4.5 w-4.5 text-gray-400" />
                   Edit
-                </Link>
+                </button>
               </div>
             </div>
         )}

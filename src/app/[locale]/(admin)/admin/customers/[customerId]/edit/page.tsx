@@ -54,6 +54,7 @@ export default async function EditCustomerPage({ params }: EditCustomerPageProps
           addressLine2: customer.addressLine2,
           areaCode: customer.areaCode,
           landmark: customer.landmark,
+          deliveryInstruction: customer.deliveryInstruction || "",
           internalNote: customer.notes,
           quantityLiters: customer.quantity,
           pricePerLiter: customer.rate,

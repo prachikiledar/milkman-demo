@@ -5,7 +5,6 @@ import { Area } from "@/models/area";
 import { CustomerProfile } from "@/models/customer-profile";
 import { DeliveryException } from "@/models/delivery-exception";
 import { MilkPlan } from "@/models/milk-plan";
-import { Payment } from "@/models/payment";
 import { User } from "@/models/user";
 
 const customerSchema = z.object({
@@ -17,32 +16,50 @@ const customerSchema = z.object({
   areaCode: z.string().trim().min(1),
   landmark: z.string().trim().optional(),
   notes: z.string().trim().optional(),
+  deliveryInstruction: z.string().trim().optional(),
+
   quantityLiters: z.number().positive(),
   pricePerLiter: z.number().nonnegative(),
   unitLabel: z.string().trim().optional(),
   status: z.enum(["ACTIVE", "INACTIVE", "PAUSED"]).optional(),
 });
 
-type RouteContext = {
-  params: Promise<{ customerCode: string }>;
-};
-
-export async function GET(_: Request, context: RouteContext) {
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ customerCode: string }> }
+) {
   await connectToDatabase();
-  const { customerCode } = await context.params;
-  const profile = await CustomerProfile.findOne({ customerCode }).lean();
+  const { customerCode } = await params;
+  const profile: any = await CustomerProfile.findOne({ customerCode }).lean();
 
   if (!profile) {
     return NextResponse.json({ error: "Customer not found" }, { status: 404 });
   }
 
-  return NextResponse.json({ customer: profile });
+  const [plan, exceptions] = await Promise.all([
+    MilkPlan.findOne({ customerId: profile._id, isActive: true }).sort({ startDate: -1 }).lean(),
+    DeliveryException.find({ 
+      customerId: profile._id, 
+      date: { $gte: new Date(new Date().setHours(0, 0, 0, 0)) } 
+    }).sort({ date: 1 }).limit(10).lean()
+  ]);
+
+  return NextResponse.json({ 
+    customer: {
+      ...profile,
+      plan,
+      exceptions
+    } 
+  });
 }
 
-export async function PUT(request: Request, context: RouteContext) {
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ customerCode: string }> }
+) {
   try {
     await connectToDatabase();
-    const { customerCode } = await context.params;
+    const { customerCode } = await params;
     const payload = customerSchema.parse(await request.json());
     const profile = await CustomerProfile.findOne({ customerCode });
 
@@ -82,6 +99,8 @@ export async function PUT(request: Request, context: RouteContext) {
     profile.area = area.name;
     profile.landmark = payload.landmark || "";
     profile.notes = payload.notes || "";
+    profile.deliveryInstruction = payload.deliveryInstruction || "";
+
     profile.isActive = payload.status !== "INACTIVE";
     await profile.save();
 
@@ -98,32 +117,12 @@ export async function PUT(request: Request, context: RouteContext) {
     plan.unitLabel = payload.unitLabel || "L";
     await plan.save();
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ success: true });
   } catch (error) {
+    console.error("PUT Error:", error);
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.issues[0]?.message }, { status: 400 });
     }
-
     return NextResponse.json({ error: "Failed to update customer" }, { status: 500 });
   }
-}
-
-export async function DELETE(_: Request, context: RouteContext) {
-  await connectToDatabase();
-  const { customerCode } = await context.params;
-  const profile = await CustomerProfile.findOne({ customerCode });
-
-  if (!profile) {
-    return NextResponse.json({ error: "Customer not found" }, { status: 404 });
-  }
-
-  await Promise.all([
-    DeliveryException.deleteMany({ customerId: profile._id }),
-    Payment.deleteMany({ customerId: profile._id }),
-    MilkPlan.deleteMany({ customerId: profile._id }),
-    User.findByIdAndDelete(profile.userId),
-    CustomerProfile.deleteOne({ _id: profile._id }),
-  ]);
-
-  return NextResponse.json({ ok: true });
 }

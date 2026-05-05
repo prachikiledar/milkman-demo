@@ -4,13 +4,12 @@ const userSchema = new Schema(
   {
     role: {
       type: String,
-      enum: ["SUPER_ADMIN", "CUSTOMER"],
+      enum: ["CUSTOMER", "ADMIN"],
       required: true,
       default: "CUSTOMER",
     },
     name: {
       type: String,
-      required: true,
       trim: true,
     },
     phone: {
@@ -26,6 +25,12 @@ const userSchema = new Schema(
     },
     passwordHash: {
       type: String,
+    },
+    otp: {
+      type: String,
+    },
+    otpExpiry: {
+      type: Date,
     },
     preferredLanguage: {
       type: String,

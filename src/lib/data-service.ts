@@ -38,6 +38,7 @@ type PlainCustomerProfile = {
   areaName: string;
   landmark?: string;
   notes?: string;
+  deliveryInstruction?: string;
   isActive?: boolean;
 };
 
@@ -65,10 +66,9 @@ type PlainDelivery = {
   _id: string;
   customerId: string;
   date: Date | string;
-  quantityDelivered: number;
-  baseQuantity?: number;
+  defaultQuantity: number;
+  actualQuantity: number;
   extraQuantity?: number;
-  finalQuantity?: number;
   status: "DELIVERED" | "SKIPPED" | "PAUSED";
   note?: string;
 };
@@ -286,6 +286,7 @@ async function getBaseData() {
     ]);
 
   return {
+    now: new Date(),
     referenceDate,
     monthStart,
     monthEnd,
@@ -378,6 +379,32 @@ export async function getCustomerListData() {
       const delivery = deliveryMap.get(customerId);
       const deliveryStatus = delivery?.status || null;
 
+      const monthDayCount = daysInMonth(base.referenceDate);
+      const leadingBlankSlots = new Date(
+        base.referenceDate.getFullYear(),
+        base.referenceDate.getMonth(),
+        1,
+      ).getDay();
+
+      const days = Array.from({ length: monthDayCount }, (_, index) => {
+        const day = index + 1;
+        const date = new Date(base.referenceDate.getFullYear(), base.referenceDate.getMonth(), day);
+        const exception = entry.monthExceptions.find(
+          (ex) => toDate(ex.date)?.toDateString() === date.toDateString(),
+        ) || null;
+        const liters = exception ? 0 : entry.activePlan?.quantityLiters ?? 0;
+
+        return {
+          dateKey: `${monthKey(base.referenceDate)}-${String(day).padStart(2, "0")}`,
+          dateLabel: formatDateLabel(date),
+          dayOfMonth: day,
+          weekdayLabel: new Intl.DateTimeFormat("en-IN", { weekday: "short" }).format(date),
+          liters,
+          status: (exception?.type === "PAUSE" ? "PAUSED" : exception?.type === "SKIP" ? "SKIPPED" : "DELIVERED") as CalendarStatus,
+          isFuture: date.getTime() > base.now.getTime(),
+        };
+      });
+
       return {
         id: customerId,
         customerCode: entry.profile.customerCode,
@@ -395,6 +422,7 @@ export async function getCustomerListData() {
         billed: entry.totals.totalAmount,
         paid: entry.totals.paidAmount,
         notes: entry.profile.notes || "",
+        deliveryInstruction: entry.profile.deliveryInstruction || "",
         deliverySlot: "Morning",
         deliveryStatus,
         extraQuantity: delivery?.extraQuantity || 0,
@@ -405,6 +433,14 @@ export async function getCustomerListData() {
             : entry.todayException?.type === "PAUSE"
               ? "PAUSED"
               : "ACTIVE",
+        calendarData: {
+          monthLabel: new Intl.DateTimeFormat("en-IN", {
+            month: "long",
+            year: "numeric",
+          }).format(base.referenceDate),
+          leadingBlankSlots,
+          days,
+        }
       };
     })
     .sort((a, b) => b.due - a.due);
@@ -560,24 +596,25 @@ export async function getDeliveryRunData(options?: {
     const delivery = deliveryByCustomer.get(customerKey);
     const exception = exceptionByCustomer.get(customerKey);
     const planQuantity = entry.activePlan?.quantityLiters || 0;
+    const defaultQuantity = delivery?.defaultQuantity ?? planQuantity;
     const status: Exclude<DeliveryRunStatus, "ALL"> =
       delivery?.status ||
       (exception?.type === "PAUSE" ? "PAUSED" : exception?.type === "SKIP" ? "SKIPPED" : "PENDING");
-    const finalQuantity =
-      delivery?.finalQuantity ?? delivery?.quantityDelivered ?? (status === "DELIVERED" ? planQuantity : 0);
+    const actualQuantity =
+      delivery?.actualQuantity ?? (status === "DELIVERED" ? planQuantity : 0);
 
     return {
       customerCode: entry.profile.customerCode,
       customerName: entry.user?.name || entry.profile.customerCode,
       quantityLabel: `${planQuantity.toFixed(1)} ${entry.activePlan?.unitLabel || "L"}`,
       status,
-      note: delivery?.note || entry.profile.notes || "",
+      deliveryInstruction: entry.profile.deliveryInstruction || "",
       route: entry.profile.areaName,
       areaCode: entry.profile.areaCode,
       dueAmount: entry.totals.dueAmount,
-      baseQuantity: planQuantity,
-      extraQuantity: delivery?.extraQuantity || 0,
-      finalQuantity,
+      defaultQuantity,
+      extraQuantity: delivery?.extraQuantity || actualQuantity - defaultQuantity,
+      actualQuantity,
       productItems: [],
     };
   });
@@ -661,7 +698,10 @@ export async function getAreaAnalyticsData() {
 
 export async function getAreasData() {
   const base = await getBaseData();
-  return base.areas;
+  return base.areas.map((area) => ({
+    ...area,
+    _id: String(area._id),
+  }));
 }
 
 export async function getAdminCalendarData(filters?: {
@@ -744,6 +784,59 @@ export async function getAdminCalendarData(filters?: {
         0,
       ),
     },
+  };
+}
+
+export async function getCustomerMonthlyCalendar(customerCode: string, month: number, year: number) {
+  await connectToDatabase();
+  const date = new Date(year, month - 1, 1);
+  const monthStart = new Date(year, month - 1, 1);
+  const monthEnd = new Date(year, month, 0);
+
+  const profiles = await CustomerProfile.find({ customerCode }).lean<PlainCustomerProfile[]>();
+  if (!profiles.length) return null;
+  const profile = profiles[0];
+  const customerId = String(profile._id);
+
+  const [exceptions, deliveries, plans] = await Promise.all([
+    DeliveryException.find({ customerId, date: { $gte: monthStart, $lte: monthEnd } }).lean<PlainDeliveryException[]>(),
+    Delivery.find({ customerId, date: { $gte: monthStart, $lte: monthEnd } }).lean<PlainDelivery[]>(),
+    MilkPlan.find({ customerId, isActive: true }).sort({ startDate: -1 }).lean<PlainMilkPlan[]>(),
+  ]);
+
+  const activePlan = plans[0] || null;
+  const monthDayCount = monthEnd.getDate();
+  const leadingBlankSlots = monthStart.getDay();
+
+  const days = Array.from({ length: monthDayCount }, (_, index) => {
+    const dayNum = index + 1;
+    const dayDate = new Date(year, month - 1, dayNum);
+    const dayKey = `${year}-${String(month).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
+    
+    const exception = exceptions.find(ex => toDate(ex.date)?.toDateString() === dayDate.toDateString());
+    const delivery = deliveries.find(d => toDate(d.date)?.toDateString() === dayDate.toDateString());
+    
+    let status: CalendarStatus = "PENDING";
+    if (exception) {
+      status = exception.type === "PAUSE" ? "PAUSED" : "SKIPPED";
+    } else if (delivery) {
+      status = delivery.status;
+    }
+
+    return {
+      dateKey: dayKey,
+      dayOfMonth: dayNum,
+      weekdayLabel: new Intl.DateTimeFormat("en-IN", { weekday: "short" }).format(dayDate),
+      status,
+      liters: delivery ? delivery.actualQuantity : (exception ? 0 : activePlan?.quantityLiters ?? 0),
+      isFuture: dayDate.getTime() > Date.now(),
+    };
+  });
+
+  return {
+    monthLabel: new Intl.DateTimeFormat("en-IN", { month: "long", year: "numeric" }).format(date),
+    leadingBlankSlots,
+    days,
   };
 }
 

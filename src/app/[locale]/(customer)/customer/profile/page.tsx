@@ -72,44 +72,46 @@ export default async function CustomerProfilePage({
           <div className="section-head">
             <h3>{t("profile.title")}</h3>
           </div>
-          <article className="list-item">
-            <div className="thumb">
-              <UserIcon className="h-5 w-5" />
-            </div>
-            <div className="meta">
-              <strong>{t("profile.name")}</strong>
-              <span>{profile.name}</span>
-            </div>
-          </article>
-          <article className="list-item">
-            <div className="thumb mint">
-              <Phone className="h-5 w-5" />
-            </div>
-            <div className="meta">
-              <strong>{t("profile.phone")}</strong>
-              <span>{profile.phone || t("common.notAvailable")}</span>
-            </div>
-          </article>
-          <article className="list-item">
-            <div className="thumb sun">
-              <MapPin className="h-5 w-5" />
-            </div>
-            <div className="meta">
-              <strong>{t("profile.address")}</strong>
-              <span>{profile.address || t("common.notAvailable")}</span>
-            </div>
-          </article>
-          <article className="list-item">
-            <div className="thumb rose">
-              <Building2 className="h-5 w-5" />
-            </div>
-            <div className="meta">
-              <strong>{t("profile.area")}</strong>
-              <span>
-                {profile.areaName} · {profile.areaCode}
-              </span>
-            </div>
-          </article>
+          <div className="split-2">
+            <article className="list-item">
+              <div className="thumb">
+                <UserIcon className="h-5 w-5" />
+              </div>
+              <div className="meta">
+                <strong>{t("profile.name")}</strong>
+                <span>{profile.name}</span>
+              </div>
+            </article>
+            <article className="list-item">
+              <div className="thumb mint">
+                <Phone className="h-5 w-5" />
+              </div>
+              <div className="meta">
+                <strong>{t("profile.phone")}</strong>
+                <span>{profile.phone || t("common.notAvailable")}</span>
+              </div>
+            </article>
+            <article className="list-item">
+              <div className="thumb sun">
+                <MapPin className="h-5 w-5" />
+              </div>
+              <div className="meta">
+                <strong>{t("profile.address")}</strong>
+                <span>{profile.address || t("common.notAvailable")}</span>
+              </div>
+            </article>
+            <article className="list-item">
+              <div className="thumb rose">
+                <Building2 className="h-5 w-5" />
+              </div>
+              <div className="meta">
+                <strong>{t("profile.area")}</strong>
+                <span>
+                  {profile.areaName} · {profile.areaCode}
+                </span>
+              </div>
+            </article>
+          </div>
 
           {/* Language */}
           <div className="section-head">

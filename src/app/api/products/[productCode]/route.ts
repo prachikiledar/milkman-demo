@@ -13,14 +13,13 @@ const productSchema = z.object({
   isActive: z.boolean().optional(),
 });
 
-type RouteContext = {
-  params: Promise<{ productCode: string }>;
-};
-
-export async function PUT(request: Request, context: RouteContext) {
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ productCode: string }> }
+) {
   try {
     await connectToDatabase();
-    const { productCode } = await context.params;
+    const { productCode } = await params;
     const payload = productSchema.parse(await request.json());
     const nextCode = normalizeAreaCode(payload.code || payload.name);
 
@@ -55,9 +54,12 @@ export async function PUT(request: Request, context: RouteContext) {
   }
 }
 
-export async function DELETE(_: Request, context: RouteContext) {
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ productCode: string }> }
+) {
   await connectToDatabase();
-  const { productCode } = await context.params;
+  const { productCode } = await params;
   const deleted = await Product.findOneAndDelete({ code: productCode }).lean();
 
   if (!deleted) {

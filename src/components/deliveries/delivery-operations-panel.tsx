@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CalendarDays, Check, Filter, MapPin, Minus, Pause, Play, X } from "lucide-react";
+import { CalendarDays, Check, Clock, Filter, MapPin, Minus, Pause, Play, Plus, X } from "lucide-react";
 import {
   AdminBadge,
   AdminButton,
@@ -22,10 +22,10 @@ type DeliveryEntry = {
   status: Exclude<DeliveryStatus, "ALL">;
   route: string;
   areaCode: string;
-  note: string;
-  baseQuantity: number;
+  deliveryInstruction?: string;
+  defaultQuantity: number;
   extraQuantity: number;
-  finalQuantity: number;
+  actualQuantity: number;
 };
 
 type DeliveryOperationsPanelProps = {
@@ -153,27 +153,44 @@ export function DeliveryOperationsPanel({
     updateFilters({ area: areaCode, status: "ALL" });
   }
 
+  const handleQuantityChange = (customerCode: string, delta: number) => {
+    setLocalEntries((prev) =>
+      prev.map((entry) => {
+        if (entry.customerCode === customerCode) {
+          const currentActual = Number(entry.actualQuantity || 0);
+          const newActual = Math.max(0, currentActual + delta);
+
+          return {
+            ...entry,
+            actualQuantity: newActual,
+            extraQuantity: newActual - entry.defaultQuantity,
+          };
+        }
+        return entry;
+      }),
+    );
+  };
+
   async function saveStatus(
     customerCode: string,
     type: "DELIVERED" | "SKIPPED" | "PAUSED" | "EXTRA" | "RESET",
     currentStatus: string
   ) {
     const isTogglingOff = type === "RESET" || currentStatus === type;
-    const finalType = type === "EXTRA" ? "DELIVERED" : type;
+    const finalStatus = type === "EXTRA" ? "DELIVERED" : type;
     setLoadingKey(`${customerCode}:${type}`);
 
     // Optimistic update
     setLocalEntries((prev) =>
       prev.map((entry) => {
         if (entry.customerCode !== customerCode) return entry;
-        
+
         if (type === "RESET") {
-          return { ...entry, status: "PENDING", extraQuantity: 0 };
+          return { ...entry, status: "PENDING" as const, actualQuantity: entry.defaultQuantity, extraQuantity: 0 };
         }
-        if (type === "EXTRA") {
-          return { ...entry, status: "DELIVERED", extraQuantity: (entry.extraQuantity || 0) + 1 };
-        }
-        return { ...entry, status: isTogglingOff ? "PENDING" : type };
+
+        const statusToSet = isTogglingOff ? "PENDING" : (type === "EXTRA" ? "DELIVERED" : type);
+        return { ...entry, status: statusToSet as any };
       })
     );
 
@@ -183,12 +200,14 @@ export function DeliveryOperationsPanel({
           method: "DELETE",
         });
       } else {
-        const body: any = { customerCode, type: finalType, date: filters.date };
-        if (type === "EXTRA") {
-          const currentEntry = localEntries.find(e => e.customerCode === customerCode);
-          body.extraQuantity = (currentEntry?.extraQuantity || 0) + 1;
-        }
-        
+        const currentEntry = localEntries.find(e => e.customerCode === customerCode);
+        const body: any = {
+          customerCode,
+          status: finalStatus,
+          date: filters.date,
+          actualQuantity: currentEntry?.actualQuantity ?? currentEntry?.defaultQuantity ?? 0,
+        };
+
         await fetch("/api/deliveries", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -209,16 +228,21 @@ export function DeliveryOperationsPanel({
     if (pending.length === 0) return;
 
     setLoadingKey("all:DELIVERED");
-    
+
     // Optimistic update
     setLocalEntries(prev => prev.map(e => e.status === "PENDING" ? { ...e, status: "DELIVERED" } : e));
 
     try {
-      await Promise.all(pending.map(e => 
+      await Promise.all(pending.map(e =>
         fetch("/api/deliveries", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ customerCode: e.customerCode, type: "DELIVERED", date: filters.date }),
+          body: JSON.stringify({
+            customerCode: e.customerCode,
+            status: "DELIVERED",
+            date: filters.date,
+            actualQuantity: e.actualQuantity || e.defaultQuantity || 0
+          }),
         })
       ));
       router.refresh();
@@ -243,9 +267,9 @@ export function DeliveryOperationsPanel({
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3">
-          <AdminButton 
+          <AdminButton
             variant="secondary"
-            onClick={markAllDelivered} 
+            onClick={markAllDelivered}
             disabled={counts.pending === 0 || loadingKey !== null}
             className="w-full sm:w-auto"
           >
@@ -301,20 +325,48 @@ export function DeliveryOperationsPanel({
 
       <div className="grid gap-3 sm:grid-cols-4">
         <div className="bg-emerald-50/50 border border-emerald-100 rounded-[22px] px-4 py-4">
-          <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600">Delivered</p>
-          <p className="mt-1 text-2xl font-black text-emerald-700">{counts.delivered}</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600">D</p>
+              <p className="mt-1 text-2xl font-black text-emerald-700">{counts.delivered}</p>
+            </div>
+            <div className="h-9 w-9 flex items-center justify-center rounded-xl bg-emerald-100/50 text-emerald-600">
+              <Check className="h-5 w-5 stroke-[3]" />
+            </div>
+          </div>
         </div>
         <div className="bg-rose-50/50 border border-rose-100 rounded-[22px] px-4 py-4">
-          <p className="text-[10px] font-black uppercase tracking-widest text-rose-600">Skipped</p>
-          <p className="mt-1 text-2xl font-black text-rose-700">{counts.skipped}</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-rose-600">S</p>
+              <p className="mt-1 text-2xl font-black text-rose-700">{counts.skipped}</p>
+            </div>
+            <div className="h-9 w-9 flex items-center justify-center rounded-xl bg-rose-100/50 text-rose-600">
+              <X className="h-5 w-5 stroke-[3]" />
+            </div>
+          </div>
         </div>
         <div className="bg-amber-50/50 border border-amber-100 rounded-[22px] px-4 py-4">
-          <p className="text-[10px] font-black uppercase tracking-widest text-amber-600">Paused</p>
-          <p className="mt-1 text-2xl font-black text-amber-700">{counts.paused}</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-amber-600">P</p>
+              <p className="mt-1 text-2xl font-black text-amber-700">{counts.paused}</p>
+            </div>
+            <div className="h-9 w-9 flex items-center justify-center rounded-xl bg-amber-100/50 text-amber-600">
+              <Pause className="h-5 w-5 stroke-[3]" />
+            </div>
+          </div>
         </div>
         <div className="bg-blue-50/50 border border-blue-100 rounded-[22px] px-4 py-4">
-          <p className="text-[10px] font-black uppercase tracking-widest text-blue-600">Pending</p>
-          <p className="mt-1 text-2xl font-black text-blue-700">{counts.pending}</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-blue-600">Pending</p>
+              <p className="mt-1 text-2xl font-black text-blue-700">{counts.pending}</p>
+            </div>
+            <div className="h-9 w-9 flex items-center justify-center rounded-xl bg-blue-100/50 text-blue-600">
+              <Clock className="h-5 w-5 stroke-[3]" />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -343,106 +395,153 @@ export function DeliveryOperationsPanel({
             <article
               key={task.customerCode}
               className={cn(
-                "admin-panel rounded-[24px] px-4 py-4 transition-all duration-300 border border-transparent",
+                "admin-panel rounded-[24px] px-4 py-5 md:px-6 md:py-6 transition-all duration-300 border border-transparent",
                 isDelivered ? "bg-[#f0fdf4] border-emerald-100/50" : "bg-white hover:border-gray-200",
-                !isPending && "opacity-90"
+                !isPending && "opacity-95 shadow-sm"
               )}
             >
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                {/* LEFT: Customer Info */}
-                <div className="flex items-center gap-4 min-w-0">
-                  <div className={cn(
-                    "h-12 w-12 shrink-0 flex items-center justify-center rounded-2xl transition-colors",
-                    isDelivered ? "bg-emerald-100 text-emerald-600" :
-                    isSkipped ? "bg-rose-100 text-rose-600" :
-                    isPaused ? "bg-amber-100 text-amber-600" : "bg-blue-50 text-blue-600"
-                  )}>
-                    {isDelivered ? <Check className="h-6 w-6" /> :
-                     isSkipped ? <X className="h-6 w-6" /> :
-                     isPaused ? <Pause className="h-6 w-6" /> : <MapPin className="h-6 w-6" />}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h2 className="truncate text-[15px] font-black text-[var(--admin-text)]">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                {/* Info Section (Left) */}
+                <div className="flex-1 min-w-0 space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className={cn(
+                      "h-10 w-10 shrink-0 flex items-center justify-center rounded-2xl transition-colors",
+                      isDelivered ? "bg-emerald-100 text-emerald-600" :
+                        isSkipped ? "bg-rose-100 text-rose-600" :
+                          isPaused ? "bg-amber-100 text-amber-600" : "bg-blue-50 text-blue-600"
+                    )}>
+                      {isDelivered ? <Check className="h-5 w-5" /> :
+                        isSkipped ? <X className="h-5 w-5" /> :
+                          isPaused ? <Pause className="h-5 w-5" /> : <MapPin className="h-5 w-5" />}
+                    </div>
+                    <div className="min-w-0">
+                      <h2 className="truncate text-lg font-black text-[var(--admin-text)] tracking-tight">
                         {task.customerName}
                       </h2>
-                      <AdminBadge tone={getStatusTone(task.status)} className="text-[10px] font-black uppercase h-5 px-2">
-                        {task.status}
-                      </AdminBadge>
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                        📍 {task.route}
+                      </p>
                     </div>
-                    <p className="mt-0.5 text-xs font-bold text-gray-500 truncate uppercase tracking-tight">
-                      {task.route} • <span className="text-[var(--admin-primary-strong)]">{task.quantityLabel}</span>
-                    </p>
+                    <AdminBadge tone={getStatusTone(task.status)} className="text-[10px] font-black uppercase h-5 px-2 ml-auto md:ml-0">
+                      {task.status === "DELIVERED" ? "D" : task.status === "SKIPPED" ? "S" : task.status === "PAUSED" ? "P" : task.status}
+                    </AdminBadge>
+                  </div>
+                  
+                  <div className="flex flex-wrap items-center gap-2">
+                    {task.extraQuantity !== 0 && task.extraQuantity !== undefined && (
+                      <span className={cn(
+                        "text-[10px] font-black px-1.5 py-0.5 rounded-full",
+                        (task.extraQuantity || 0) > 0 ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"
+                      )}>
+                        {(task.extraQuantity || 0) > 0 ? "+" : ""}{(task.extraQuantity || 0).toFixed(1)}L
+                      </span>
+                    )}
+                    {task.deliveryInstruction && (
+                      <p className="text-[11px] font-medium text-[var(--admin-primary-strong)] italic">
+                        "{task.deliveryInstruction}"
+                      </p>
+                    )}
                   </div>
                 </div>
 
-                {/* CENTER: Notes (Only if exists) */}
-                <div className="flex-1 hidden md:flex items-center px-4">
-                  {task.note && (
-                    <p className="text-xs italic text-gray-400 font-medium truncate max-w-[200px]">
-                      "{task.note}"
-                    </p>
-                  )}
-                </div>
+                {/* Controls Section (Right) */}
+                <div className="flex flex-col items-end gap-4 shrink-0">
 
-                {/* RIGHT: Delivery Actions */}
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => saveStatus(task.customerCode, isDelivered ? "RESET" : "DELIVERED", task.status)}
-                    disabled={loadingKey !== null}
-                    className={cn(
-                      "flex h-10 w-10 items-center justify-center rounded-full transition-all active:scale-90",
-                      isDelivered 
-                        ? "bg-[#22C55E] text-white shadow-md" 
-                        : "bg-green-50 text-[#22C55E] hover:bg-green-100"
-                    )}
-                    title={isDelivered ? "Undo Delivery" : "Mark Delivered"}
-                  >
-                    {loadingKey === `${task.customerCode}:DELIVERED` ? (
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                    ) : (
-                      <Check className="h-[22px] w-[22px] stroke-[3]" />
-                    )}
-                  </button>
+                  {/* Quantity Stepper */}
+                  <div className="flex items-center bg-gray-50 rounded-full p-1 border border-gray-100 shadow-sm w-full md:w-auto justify-between md:justify-start">
+                    <button
+                      type="button"
+                      onClick={() => handleQuantityChange(task.customerCode, -0.5)}
+                      disabled={(task.actualQuantity || 0) <= 0}
+                      className={cn(
+                        "flex h-9 w-9 items-center justify-center rounded-full bg-white text-gray-500 shadow-sm border border-gray-100 hover:text-rose-500 transition-colors active:scale-90",
+                        (task.actualQuantity || 0) <= 0 && "opacity-30 cursor-not-allowed"
+                      )}
+                    >
+                      <Minus className="h-3 w-3 stroke-[3]" />
+                    </button>
+                    <div className="px-4 min-w-[70px] text-center">
+                      <span className="text-base font-black text-[var(--admin-text)]">
+                        {(task.actualQuantity || 0).toFixed(1)}L
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleQuantityChange(task.customerCode, 0.5)}
+                      className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-gray-500 shadow-sm border border-gray-100 hover:text-emerald-500 transition-colors active:scale-90"
+                    >
+                      <Plus className="h-3 w-3 stroke-[3]" />
+                    </button>
+                  </div>
 
-                  <button
-                    type="button"
-                    onClick={() => saveStatus(task.customerCode, isSkipped ? "RESET" : "SKIPPED", task.status)}
-                    disabled={loadingKey !== null}
-                    className={cn(
-                      "flex h-10 w-10 items-center justify-center rounded-full transition-all active:scale-90",
-                      isSkipped 
-                        ? "bg-[#EF4444] text-white shadow-md" 
-                        : "bg-red-50 text-[#EF4444] hover:bg-red-100"
-                    )}
-                    title={isSkipped ? "Undo Skip" : "Mark Skipped"}
-                  >
-                    {loadingKey === `${task.customerCode}:SKIPPED` ? (
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                    ) : (
-                      <X className="h-[22px] w-[22px] stroke-[3]" />
-                    )}
-                  </button>
+                  {/* Actions */}
+                  <div className="flex items-center gap-2 w-full md:w-auto">
+                    <button
+                      type="button"
+                      onClick={() => saveStatus(task.customerCode, isDelivered ? "RESET" : "DELIVERED", task.status)}
+                      disabled={loadingKey !== null}
+                      className={cn(
+                        "flex-1 md:flex-none flex items-center justify-center gap-1.5 h-11 px-4 rounded-xl font-bold transition-all active:scale-95",
+                        isDelivered
+                          ? "bg-emerald-600 text-white shadow-lg shadow-emerald-100"
+                          : cn(
+                            "bg-emerald-50 text-emerald-700 border border-emerald-100",
+                            !isPending && "opacity-40 grayscale-[0.5] hover:opacity-100 hover:grayscale-0"
+                          )
+                      )}
+                    >
+                      {loadingKey === `${task.customerCode}:DELIVERED` ? (
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                      ) : (
+                        <Check className="h-4 w-4 stroke-[3]" />
+                      )}
+                      <span className="text-[10px] uppercase tracking-widest hidden sm:inline">Deliver</span>
+                    </button>
 
-                  <button
-                    type="button"
-                    onClick={() => saveStatus(task.customerCode, isPaused ? "RESET" : "PAUSED", task.status)}
-                    disabled={loadingKey !== null}
-                    className={cn(
-                      "flex h-10 w-10 items-center justify-center rounded-full transition-all active:scale-90",
-                      isPaused 
-                        ? "bg-[#F59E0B] text-white shadow-md" 
-                        : "bg-amber-50 text-[#F59E0B] hover:bg-amber-100"
-                    )}
-                    title={isPaused ? "Undo Pause" : "Mark Paused"}
-                  >
-                    {loadingKey === `${task.customerCode}:PAUSED` ? (
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                    ) : (
-                      <Pause className="h-[22px] w-[22px] stroke-[3]" />
-                    )}
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => saveStatus(task.customerCode, isSkipped ? "RESET" : "SKIPPED", task.status)}
+                      disabled={loadingKey !== null}
+                      className={cn(
+                        "flex-1 md:flex-none flex items-center justify-center gap-1.5 h-11 px-4 rounded-xl font-bold transition-all active:scale-95",
+                        isSkipped
+                          ? "bg-rose-600 text-white shadow-lg shadow-rose-100"
+                          : cn(
+                            "bg-rose-50 text-rose-700 border border-rose-100",
+                            !isPending && "opacity-40 grayscale-[0.5] hover:opacity-100 hover:grayscale-0"
+                          )
+                      )}
+                    >
+                      {loadingKey === `${task.customerCode}:SKIPPED` ? (
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                      ) : (
+                        <X className="h-4 w-4 stroke-[3]" />
+                      )}
+                      <span className="text-[10px] uppercase tracking-widest hidden sm:inline">Skip</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => saveStatus(task.customerCode, isPaused ? "RESET" : "PAUSED", task.status)}
+                      disabled={loadingKey !== null}
+                      className={cn(
+                        "flex-1 md:flex-none flex items-center justify-center gap-1.5 h-11 px-4 rounded-xl font-bold transition-all active:scale-95",
+                        isPaused
+                          ? "bg-amber-500 text-white shadow-lg shadow-amber-100"
+                          : cn(
+                            "bg-amber-50 text-amber-700 border border-amber-100",
+                            !isPending && "opacity-40 grayscale-[0.5] hover:opacity-100 hover:grayscale-0"
+                          )
+                      )}
+                    >
+                      {loadingKey === `${task.customerCode}:PAUSED` ? (
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                      ) : (
+                        <Pause className="h-4 w-4 stroke-[3]" />
+                      )}
+                      <span className="text-[10px] uppercase tracking-widest hidden sm:inline">Pause</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </article>

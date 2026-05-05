@@ -7,24 +7,31 @@ import { useTranslations } from "next-intl";
 import { AdminButton, AdminCard } from "@/components/layout/admin-ui";
 import { CustomerListItem } from "./customer-list-item";
 import { CustomerDetailModal } from "./customer-detail-modal";
+import { CustomerCalendarModal } from "./customer-calendar-modal";
 
 type CustomerListProps = {
   customers: any[];
+  areas: any[];
   locale: string;
 };
 
-export function CustomerList({ customers, locale }: CustomerListProps) {
+export function CustomerList({ customers, areas, locale }: CustomerListProps) {
   const t = useTranslations("admin.customers");
   const tCommon = useTranslations("common");
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
-  const [modalMode, setModalMode] = useState<'view' | 'details'>('view');
+  const [modalMode, setModalMode] = useState<'view' | 'details' | 'edit' | 'schedule' | 'calendar'>('view');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
-  const handleViewCustomer = (customer: any, mode: 'view' | 'details' = 'view') => {
+  const handleViewCustomer = (customer: any, mode: any = 'view') => {
     setSelectedCustomer(customer);
-    setModalMode(mode);
-    setIsModalOpen(true);
+    if (mode === 'calendar') {
+      setIsCalendarOpen(true);
+    } else {
+      setModalMode(mode);
+      setIsModalOpen(true);
+    }
   };
 
   return (
@@ -75,8 +82,15 @@ export function CustomerList({ customers, locale }: CustomerListProps) {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         customer={selectedCustomer}
+        areas={areas}
         locale={locale}
-        mode={modalMode}
+        mode={modalMode as any}
+      />
+
+      <CustomerCalendarModal
+        isOpen={isCalendarOpen}
+        onClose={() => setIsCalendarOpen(false)}
+        customer={selectedCustomer}
       />
     </>
   );

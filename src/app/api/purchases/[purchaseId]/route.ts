@@ -15,14 +15,13 @@ const purchaseSchema = z.object({
   date: z.string().trim().optional(),
 });
 
-type RouteContext = {
-  params: Promise<{ purchaseId: string }>;
-};
-
-export async function PUT(request: Request, context: RouteContext) {
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ purchaseId: string }> }
+) {
   try {
     await connectToDatabase();
-    const { purchaseId } = await context.params;
+    const { purchaseId } = await params;
     const payload = purchaseSchema.parse(await request.json());
 
     const [entry, vendor, product] = await Promise.all([
@@ -67,9 +66,12 @@ export async function PUT(request: Request, context: RouteContext) {
   }
 }
 
-export async function DELETE(_: Request, context: RouteContext) {
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ purchaseId: string }> }
+) {
   await connectToDatabase();
-  const { purchaseId } = await context.params;
+  const { purchaseId } = await params;
   const deleted = await PurchaseEntry.findByIdAndDelete(purchaseId).lean();
 
   if (!deleted) {

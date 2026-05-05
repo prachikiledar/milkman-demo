@@ -56,7 +56,7 @@ export default async function CustomerBillingPage({
         </div>
       </div>
 
-      <div className="stack gap-3">
+      <div className="split-3">
         {rows.map(({ key, label, value, tone, icon: Icon }) => (
           <article key={key} className="list-item">
             <div className={`thumb ${tone}`}>

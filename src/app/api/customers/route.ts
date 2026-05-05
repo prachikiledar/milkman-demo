@@ -15,6 +15,7 @@ const customerSchema = z.object({
   areaCode: z.string().trim().min(1),
   landmark: z.string().trim().optional(),
   notes: z.string().trim().optional(),
+  deliveryInstruction: z.string().trim().optional(),
   quantityLiters: z.number().positive(),
   pricePerLiter: z.number().nonnegative(),
   unitLabel: z.string().trim().optional(),
@@ -67,6 +68,7 @@ export async function POST(request: Request) {
       area: area.name,
       landmark: payload.landmark || "",
       notes: payload.notes || "",
+      deliveryInstruction: payload.deliveryInstruction || "",
       isActive: payload.status !== "INACTIVE",
     });
 

@@ -25,12 +25,14 @@ type CustomerFormProps = {
     areaCode: string;
     landmark: string;
     internalNote: string;
+    deliveryInstruction: string;
     quantityLiters: number;
     pricePerLiter: number;
     unitLabel: string;
     status: "ACTIVE" | "PAUSED" | "INACTIVE";
   };
   areas: Array<{ code: string; name: string }>;
+  onSuccess?: () => void;
 };
 
 export function CustomerForm({
@@ -39,6 +41,7 @@ export function CustomerForm({
   customerCode,
   initialValues,
   areas,
+  onSuccess,
 }: CustomerFormProps) {
   const router = useRouter();
   const defaults = useMemo(
@@ -51,6 +54,7 @@ export function CustomerForm({
       areaCode: initialValues?.areaCode || areas[0]?.code || "",
       landmark: initialValues?.landmark || "",
       internalNote: initialValues?.internalNote || "",
+      deliveryInstruction: initialValues?.deliveryInstruction || "",
       quantityLiters: String(initialValues?.quantityLiters ?? 2),
       pricePerLiter: String(initialValues?.pricePerLiter ?? 62),
       unitLabel: initialValues?.unitLabel || "L",
@@ -67,7 +71,8 @@ export function CustomerForm({
     setForm((prev) => {
       const current = parseFloat(prev.quantityLiters) || 0;
       const next = Math.max(0, current + delta);
-      return { ...prev, quantityLiters: String(next) };
+      // Use Number() to remove trailing zeros if they exist (e.g. 2.50 -> 2.5)
+      return { ...prev, quantityLiters: String(Number(next.toFixed(2))) };
     });
   };
 
@@ -100,11 +105,15 @@ export function CustomerForm({
         throw new Error(data.error || "Unable to save customer");
       }
 
-      router.push(
-        mode === "create"
-          ? `/${locale}/admin/customers`
-          : `/${locale}/admin/customers/${customerCode}`,
-      );
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        router.push(
+          mode === "create"
+            ? `/${locale}/admin/customers`
+            : `/${locale}/admin/customers/${customerCode}`,
+        );
+      }
       router.refresh();
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "Unable to save customer");
@@ -147,18 +156,13 @@ export function CustomerForm({
             </AdminSelect>
           </AdminField>
           <AdminField label="Area code">
-            <AdminSelect
+            <AdminInput
               value={form.areaCode}
               onChange={(event) =>
                 setForm((current) => ({ ...current, areaCode: event.target.value }))
               }
-            >
-              {areas.map((area) => (
-                <option key={area.code} value={area.code}>
-                  {area.code} • {area.name}
-                </option>
-              ))}
-            </AdminSelect>
+              placeholder="e.g. SC"
+            />
           </AdminField>
         </div>
 
@@ -190,18 +194,21 @@ export function CustomerForm({
           </AdminField>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-4">
+        <div className="grid gap-6 sm:grid-cols-2">
           <AdminField label="Milk quantity">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 max-w-[200px]">
               <button
                 type="button"
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={() => updateQuantity(-0.5)}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--admin-border)] bg-white text-[var(--admin-muted)] transition hover:bg-[var(--admin-panel-muted)] active:scale-95"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--admin-border)] bg-white text-[var(--admin-text)] shadow-sm transition hover:bg-gray-50 active:scale-95"
               >
-                <Minus className="h-4 w-4" />
+                <Minus className="h-4 w-4 stroke-[3]" />
               </button>
               <AdminInput
-                className="text-center font-bold"
+                type="number"
+                step="0.5"
+                className="hide-spinner w-full text-center font-black text-base px-1"
                 value={form.quantityLiters}
                 onChange={(event) =>
                   setForm((current) => ({ ...current, quantityLiters: event.target.value }))
@@ -209,10 +216,11 @@ export function CustomerForm({
               />
               <button
                 type="button"
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={() => updateQuantity(0.5)}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--admin-border)] bg-white text-[var(--admin-muted)] transition hover:bg-[var(--admin-panel-muted)] active:scale-95"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--admin-border)] bg-white text-[var(--admin-text)] shadow-sm transition hover:bg-gray-50 active:scale-95"
               >
-                <Plus className="h-4 w-4" />
+                <Plus className="h-4 w-4 stroke-[3]" />
               </button>
             </div>
           </AdminField>
@@ -248,6 +256,16 @@ export function CustomerForm({
             </AdminSelect>
           </AdminField>
         </div>
+
+        <AdminField label="Delivery Instruction (optional)">
+          <AdminInput
+            value={form.deliveryInstruction}
+            onChange={(event) =>
+              setForm((current) => ({ ...current, deliveryInstruction: event.target.value }))
+            }
+            placeholder="e.g. Ring once and leave at the door"
+          />
+        </AdminField>
 
         <AdminField label="Internal note">
           <AdminTextarea

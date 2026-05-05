@@ -1,8 +1,6 @@
-import { CheckCircle2, PauseCircle, XCircle } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { DeliveryOperationsPanel } from "@/components/deliveries/delivery-operations-panel";
 import { AdminShell } from "@/components/layout/admin-shell";
-import { AdminCard, AdminStatCard } from "@/components/layout/admin-ui";
 import { getAreasData, getDeliveryRunData } from "@/lib/data-service";
 
 type AdminDeliveriesPageProps = {
@@ -48,34 +46,6 @@ export default async function AdminDeliveriesPage({
 
   return (
     <AdminShell locale={locale} title={t("title")} subtitle={t("subtitle")}>
-      <div className="grid gap-4 md:grid-cols-3">
-        <AdminStatCard
-          label={t("stats.delivered")}
-          value={String(deliveredCount)}
-          hint={t("stats.deliveredHint")}
-          icon={CheckCircle2}
-          tone="success"
-        />
-        <AdminStatCard
-          label="Skipped"
-          value={String(skippedCount)}
-          hint="Exception rows only"
-          icon={XCircle}
-          tone="danger"
-        />
-        <AdminStatCard
-          label="Paused"
-          value={String(pausedCount)}
-          hint={t("stats.pausedSkippedHint")}
-          icon={PauseCircle}
-          tone="warning"
-        />
-      </div>
-
-      <AdminCard>
-        <p className="text-sm text-[var(--admin-muted)]">{t("note")}</p>
-      </AdminCard>
-
       <DeliveryOperationsPanel
         entries={entries}
         areas={areas.map((area) => ({ code: area.code, name: area.name }))}

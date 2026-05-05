@@ -17,14 +17,13 @@ const vendorSchema = z.object({
   isActive: z.boolean().optional(),
 });
 
-type RouteContext = {
-  params: Promise<{ vendorCode: string }>;
-};
-
-export async function PUT(request: Request, context: RouteContext) {
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ vendorCode: string }> }
+) {
   try {
     await connectToDatabase();
-    const { vendorCode } = await context.params;
+    const { vendorCode } = await params;
     const payload = vendorSchema.parse(await request.json());
     const nextCode = normalizeAreaCode(payload.code || payload.name);
     const vendor = await Vendor.findOne({ code: vendorCode });
@@ -71,9 +70,12 @@ export async function PUT(request: Request, context: RouteContext) {
   }
 }
 
-export async function DELETE(_: Request, context: RouteContext) {
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ vendorCode: string }> }
+) {
   await connectToDatabase();
-  const { vendorCode } = await context.params;
+  const { vendorCode } = await params;
   const [linkedPurchases, linkedMilkEntries] = await Promise.all([
     PurchaseEntry.countDocuments({ vendorCode }),
     MilkEntry.countDocuments({ vendorCode }),

@@ -39,7 +39,7 @@ export default async function CustomerHistoryPage({
           <p className="card-sub">{t("history.empty")}</p>
         </section>
       ) : (
-        <div className="stack gap-2">
+        <div className="split-2">
           {entries.map((entry, idx) => {
             const chip = statusToChip[entry.status] ?? statusToChip.PENDING;
             const Icon = chip.icon;
