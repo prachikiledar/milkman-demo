@@ -55,7 +55,6 @@ export async function POST(request: Request) {
       phone: payload.phone,
       preferredLanguage: payload.preferredLanguage ?? "en",
       status: payload.status === "INACTIVE" ? "INACTIVE" : "ACTIVE",
-      passwordHash: "seeded-password",
     });
 
     const profile = await CustomerProfile.create({

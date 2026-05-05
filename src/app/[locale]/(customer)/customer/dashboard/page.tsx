@@ -28,17 +28,7 @@ export default function CustomerDashboardPage() {
   useEffect(() => {
     const fetchCustomer = async () => {
       try {
-        const token = localStorage.getItem("token_CUSTOMER") || localStorage.getItem("token");
-        if (!token) {
-          window.location.href = `/${locale}/login?role=customer`;
-          return;
-        }
-
-        const res = await fetch("/api/auth/me", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const res = await fetch("/api/auth/me");
 
         const data = await res.json();
         if (data.success) {

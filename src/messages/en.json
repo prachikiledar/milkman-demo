@@ -45,24 +45,11 @@
   },
   "auth": {
     "eyebrow": "Secure login",
-    "title": "Access your account",
-    "description": "Sign in with your registered mobile number to continue.",
+    "title": "Welcome back",
+    "description": "Enter your mobile number to access your account instantly.",
     "mobile": "Mobile number",
     "mobilePlaceholder": "10-digit number",
-    "password": "Password",
-    "passwordPlaceholder": "Enter password",
-    "submit": "Login",
-    "forgot": "Forgot password?",
-    "sendOtp": "Send OTP",
-    "verifyOtp": "Verify OTP & Login",
-    "otp": "Enter OTP",
-    "otpPlaceholder": "6-digit OTP",
-    "resendOtp": "Resend OTP",
-    "sending": "Sending OTP...",
-    "verifying": "Verifying...",
-    "invalidOtp": "Invalid OTP",
-    "expiredOtp": "OTP Expired",
-    "success": "Login successful"
+    "submit": "Login"
   },
   "home": {
     "hero": {

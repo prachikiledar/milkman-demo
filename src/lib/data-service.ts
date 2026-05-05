@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { connectToDatabase } from "@/lib/db/connect";
 import type { CalendarStatus } from "@/lib/calendar";
 import { Area } from "@/models/area";
@@ -264,7 +265,7 @@ async function getReferenceDate() {
   return candidateDates.sort((left, right) => right.getTime() - left.getTime())[0];
 }
 
-async function getBaseData() {
+const getBaseData = cache(async () => {
   await connectToDatabase();
   const referenceDate = await getReferenceDate();
   const monthStart = startOfMonth(referenceDate);
@@ -308,7 +309,7 @@ async function getBaseData() {
     vendors,
     purchasesMonth,
   };
-}
+});
 
 function buildCustomerEntities(base: Awaited<ReturnType<typeof getBaseData>>) {
   const userMap = mapById(base.users);

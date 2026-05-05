@@ -130,13 +130,6 @@ export default async function CustomerProfilePage({
             </div>
           </article>
 
-          {/* Sign out */}
-          <div className="mt-4">
-            <button type="button" className="btn btn-ghost btn-block">
-              <LogOut className="h-4 w-4" />
-              {t("profile.signOut")}
-            </button>
-          </div>
         </>
       ) : (
         <section className="card">

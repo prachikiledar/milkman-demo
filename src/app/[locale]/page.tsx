@@ -66,7 +66,7 @@ export default async function LocaleHomePage({ params }: LocaleHomePageProps) {
       <section id="options" className="landing-cards-container">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
           {/* Customer Card */}
-          <Link href={`/${locale}/login?role=customer`} className="premium-card group">
+          <Link href={`/${locale}/customer/dashboard`} className="premium-card group">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 transition-colors group-hover:bg-blue-100">
               <UserCircle className="h-8 w-8" />
             </div>
@@ -83,7 +83,7 @@ export default async function LocaleHomePage({ params }: LocaleHomePageProps) {
           </Link>
 
           {/* Admin Card */}
-          <Link href={`/${locale}/login?role=admin`} className="premium-card group">
+          <Link href={`/${locale}/admin/dashboard`} className="premium-card group">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 transition-colors group-hover:bg-amber-100">
               <LayoutDashboard className="h-8 w-8" />
             </div>

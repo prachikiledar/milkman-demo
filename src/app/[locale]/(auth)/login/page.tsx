@@ -1,20 +1,17 @@
-import { LoginForm } from "@/components/auth/login-form";
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import { redirect } from "next/navigation";
 
 type LoginPageProps = {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ role?: string }>;
 };
 
-export default async function LoginPage({ params }: LoginPageProps) {
+export default async function LoginPage({ params, searchParams }: LoginPageProps) {
   const { locale } = await params;
-  setRequestLocale(locale);
-  const t = await getTranslations({ locale });
-
-  return (
-    <main className="app-shell-main flex items-center justify-center min-h-[calc(100vh-80px)]">
-      <div className="w-full max-w-md">
-        <LoginForm />
-      </div>
-    </main>
-  );
+  const { role } = await searchParams;
+  
+  if (role === "customer") {
+    redirect(`/${locale}/customer/dashboard`);
+  }
+  
+  redirect(`/${locale}/admin/dashboard`);
 }

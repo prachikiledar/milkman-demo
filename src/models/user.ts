@@ -24,15 +24,6 @@ const userSchema = new Schema(
       trim: true,
       lowercase: true,
     },
-    passwordHash: {
-      type: String,
-    },
-    otp: {
-      type: String,
-    },
-    otpExpiry: {
-      type: Date,
-    },
     preferredLanguage: {
       type: String,
       enum: ["en", "hi", "pa"],
