@@ -308,40 +308,24 @@ const customStyles = `
       display: flex;
       overflow-x: auto;
       scroll-snap-type: x mandatory;
-<<<<<<< Updated upstream
+      gap: 10px;
       padding-bottom: 8px;
       margin: 0 -16px;
       padding-left: 16px;
       padding-right: 16px;
-      scrollbar-width: none; /* Firefox */
-      -ms-overflow-style: none;  /* IE and Edge */
+      -ms-overflow-style: none;
+      scrollbar-width: none;
     }
-    .stats-row::-webkit-scrollbar {
-      display: none;
-    }
+    .stats-row::-webkit-scrollbar { display: none; }
     .stat-card {
       min-width: 200px;
       flex-shrink: 0;
       scroll-snap-align: start;
-=======
-      gap: 10px;
-      padding-bottom: 8px;
-      -ms-overflow-style: none;
-      scrollbar-width: none;
->>>>>>> Stashed changes
-    }
-    .stats-row::-webkit-scrollbar { display: none; }
-  }
 
   .stat-card { 
     background: white; 
-<<<<<<< Updated upstream
-    border-radius: 20px; 
-    padding: 16px; 
-=======
-    border-radius: 18px; 
-    padding: 14px 16px; 
->>>>>>> Stashed changes
+    border-radius: 20px;
+    padding: 16px;
     position: relative; 
     overflow: hidden; 
     border: 1px solid #f3f4f6;
