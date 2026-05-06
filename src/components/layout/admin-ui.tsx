@@ -53,24 +53,24 @@ export function AdminStatCard({
   } as const;
 
   return (
-    <article className={cn("admin-kpi-card rounded-[22px] p-3 sm:rounded-[26px] sm:p-5", className)}>
+    <article className={cn("admin-kpi-card rounded-[22px] p-4 sm:rounded-[26px] sm:p-5", className)}>
       <div className="flex items-start justify-between gap-2 sm:gap-3">
         <div>
-          <p className="text-[10px] font-medium text-[var(--admin-muted)] sm:text-sm">{label}</p>
-          <p className="mt-0.5 text-lg font-bold tracking-tight text-[var(--admin-text)] sm:mt-3 sm:text-3xl sm:font-semibold">
+          <p className="text-[11px] font-medium text-[var(--admin-muted)] sm:text-sm">{label}</p>
+          <p className="mt-1 text-xl font-bold tracking-tight text-[var(--admin-text)] sm:mt-3 sm:text-3xl sm:font-semibold">
             {value}
           </p>
         </div>
         <div
           className={cn(
-            "flex h-8 w-8 shrink-0 items-center justify-center rounded-xl sm:h-11 sm:w-11 sm:rounded-2xl",
+            "flex h-9 w-9 items-center justify-center rounded-xl sm:h-11 sm:w-11 sm:rounded-2xl",
             toneMap[tone],
           )}
         >
           <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
         </div>
       </div>
-      <p className="mt-1 text-[10px] leading-4 text-[var(--admin-muted)] sm:mt-3 sm:text-sm sm:leading-6">{hint}</p>
+      <p className="mt-2 text-[10px] leading-4 text-[var(--admin-muted)] sm:mt-3 sm:text-sm sm:leading-6">{hint}</p>
     </article>
   );
 }

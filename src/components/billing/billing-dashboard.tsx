@@ -6,7 +6,7 @@ import { AdminShell } from "@/components/layout/admin-shell";
 import { AdminCard, AdminStatCard } from "@/components/layout/admin-ui";
 import { BillingManagement } from "@/components/billing/billing-management";
 import { RecentEntries } from "@/components/billing/recent-entries";
-import { cn, formatCurrencyINR } from "@/lib/utils";
+import { formatCurrencyINR } from "@/lib/utils";
 import { BadgeIndianRupee, CircleDollarSign, WalletCards } from "lucide-react";
 
 type BillingDashboardProps = {
@@ -136,7 +136,6 @@ export function BillingDashboard({ locale, translations, data }: BillingDashboar
             </div>
             <RecentEntries 
               payments={data.recentPayments} 
-              customers={data.customers}
               viewAllLabel={translations.viewAllPayments} 
             />
           </AdminCard>

@@ -5,20 +5,16 @@ import {
   Droplets,
   Gauge,
   MoveRight,
-  ShoppingCart,
   Users,
   Plus,
   Play,
   Square,
   ArrowUpRight,
 } from "lucide-react";
-import Image from "next/image";
 import { Link } from "@/i18n/routing";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { AdminShell } from "@/components/layout/admin-shell";
 import { AdminBadge, AdminCard, AdminStatCard } from "@/components/layout/admin-ui";
-
-import { cn, formatCurrencyINR } from "@/lib/utils";
 import { getAdminCalendarData, getDashboardData, getPurchaseLedgerData } from "@/lib/data-service";
 import { formatCurrencyINR } from "@/lib/utils";
 import { LiveClock } from "@/components/layout/live-clock";
@@ -199,9 +195,6 @@ export default async function AdminDashboardPage({
                   <div className="h-1.5 bg-gray-50 rounded-full overflow-hidden">
                     <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${p.val}%`, background: p.color }}></div>
                   </div>
-                  <AdminBadge tone={entry.tone}>
-                    {entry.issue}
-                  </AdminBadge>
                 </div>
               ))}
             </div>

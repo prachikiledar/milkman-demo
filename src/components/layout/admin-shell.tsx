@@ -171,24 +171,15 @@ export function AdminShell({
             </div>
           </div>
 
-        <aside
-          className={cn(
-            "fixed left-0 top-[64px] z-50 h-[calc(100vh-64px)] w-[308px] max-w-[86vw] p-4 transition-transform duration-200 lg:hidden",
-            isDrawerOpen ? "translate-x-0" : "-translate-x-full",
-          )}
-        >
-          <div className="admin-panel flex h-full flex-col rounded-[32px] p-6 shadow-2xl overflow-y-auto">
-            <div className="flex items-center justify-between gap-3 pt-2">
-              <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--admin-primary-soft)] text-[var(--admin-primary-strong)]">
-                  <Droplets className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--admin-muted)]">
-                    {tShell("brand")}
-                  </p>
-                  <p className="text-lg font-bold text-[var(--admin-text)]">{tShell("mobileTitle")}</p>
-                </div>
+          <div className="flex items-center gap-4">
+            <button className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 border border-gray-100 text-gray-500 relative hover:bg-gray-100 transition-colors">
+              <Bell size={20} />
+              <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
+            </button>
+            <div className="flex items-center gap-3 pl-2 border-l border-gray-200">
+              <div className="text-right hidden sm:block">
+                <p className="text-xs font-bold text-gray-900">Admin Panel</p>
+                <p className="text-[10px] text-gray-400 font-medium">admin@dairly.in</p>
               </div>
               <div className="w-10 h-10 rounded-full bg-green-100 border border-green-200 flex items-center justify-center font-bold text-[#064e3b] text-xs">
                 AD
@@ -201,124 +192,23 @@ export function AdminShell({
                 <LogOut size={18} />
               </button>
             </div>
-
-            <div className="admin-panel-muted mt-6 rounded-[24px] p-4">
-              <p className="text-xs font-bold text-[var(--admin-muted)] uppercase tracking-wider">
-                {tShell("activeRoute")}
-              </p>
-              <p className="mt-1 text-base font-bold text-[var(--admin-text)]">
-                {tShell("customersThisCycle", { count: 128 })}
-              </p>
-            </div>
-
-            <nav className="mt-6 space-y-2">{navItems.map(renderNavItem)}</nav>
           </div>
-        </aside>
+        </header>
 
-        <div className="min-w-0 flex-1">
-          <header className="sticky top-16 z-30 mb-8 sm:top-[76px] sm:mb-6">
-            <div className="admin-panel rounded-[30px] px-4 py-3 shadow-lg shadow-blue-900/5 sm:px-5 sm:shadow-none">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex min-w-0 items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setIsDrawerOpen(true)}
-                    className="admin-icon-button h-11 w-11 lg:hidden"
-                    aria-label={tShell("openMenu")}
-                  >
-                    <Menu className="h-5 w-5" />
-                  </button>
-                  <div className="min-w-0">
-                    <p className="truncate text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--admin-muted)] sm:text-[13px]">
-                      {tShell("workspaceEyebrow")}
-                    </p>
-                    <p className="truncate text-base font-bold text-[var(--admin-text)] sm:text-xl">
-                      {title}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    className="admin-icon-button h-11 w-11"
-                    aria-label={tShell("notifications")}
-                  >
-                    <Bell className="h-5 w-5" />
-                  </button>
-                </div>
-              </div>
+        {/* DASHBOARD PAGE WRAPPER */}
+        <main className="p-4 sm:p-8 overflow-y-auto overflow-x-clip">
+          <div className="max-w-[1400px] mx-auto">
+            <div className="mb-10">
+              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-gray-900 mb-2">{title}</h1>
+              <p className="text-gray-500 font-medium text-sm">{subtitle}</p>
             </div>
-          </header>
 
-          <main className="mt-4 space-y-8 pb-24 sm:mt-0 sm:space-y-4">
-            {!hideHero && (
-              <section className="admin-panel rounded-[32px] px-5 py-5 sm:px-6 hidden md:block">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                  <div className="min-w-0">
-                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--admin-muted)]">
-                      {tShell("heroEyebrow")}
-                    </p>
-                    <h1 className="mt-2 text-2xl font-semibold tracking-tight text-[var(--admin-text)] sm:text-3xl">
-                      {title}
-                    </h1>
-                    <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--admin-muted)] sm:text-[15px]">
-                      {subtitle}
-                    </p>
-                    {search && (
-                      <div className="mt-4 w-full sm:mt-0 sm:max-w-md">
-                        {search}
-                      </div>
-                    )}
-                  </div>
-                  {tShell("liveMode") && (
-                    <div className="admin-panel-muted rounded-[22px] px-4 py-3 text-sm text-[var(--admin-muted)]">
-                      <span className="font-semibold text-[var(--admin-text)]">
-                        {tShell("liveMode")}
-                      </span>
-                      {tShell("superAdminPreview") && (
-                        <>
-                          <span className="mx-2 text-[var(--admin-border)]">•</span>
-                          <span>{tShell("superAdminPreview")}</span>
-                        </>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </section>
-            )}
-
-            {children}
-          </main>
-
-          {/* Sticky Bottom Nav (Mobile Only) */}
-          <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg border-t border-slate-200 flex items-center justify-around h-16 px-2 lg:hidden">
-            {[
-              { href: "dashboard", icon: Home },
-              { href: "deliveries", icon: Droplets },
-              { href: "customers", icon: Users },
-              { href: "billing", icon: CreditCard },
-            ].map(({ href, icon: Icon }) => {
-              const target = `/${locale}/admin/${href}`;
-              const isActive = pathname === target || pathname.startsWith(`${target}/`);
-              return (
-                <Link
-                  key={href}
-                  href={target}
-                  className={cn(
-                    "flex flex-col items-center justify-center gap-1 transition-all active:scale-90",
-                    isActive ? "text-blue-600" : "text-slate-400"
-                  )}
-                >
-                  <Icon className={cn("h-6 w-6", isActive && "stroke-[2.5px]")} />
-                  <span className={cn("text-[10px] font-bold", isActive ? "text-blue-600" : "text-slate-400")}>
-                    {tNav(href)}
-                  </span>
-                </Link>
-              );
-            })}
-          </nav>
-        </div>
+            {/* Page contents (Children) render here against the gray background */}
+            <div className="relative z-10">
+              {children}
+            </div>
+          </div>
+        </main>
       </div>
     </div>
   );
