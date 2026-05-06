@@ -20,6 +20,7 @@ import { AdminBadge, AdminCard, AdminStatCard } from "@/components/layout/admin-
 
 import { cn, formatCurrencyINR } from "@/lib/utils";
 import { getAdminCalendarData, getDashboardData, getPurchaseLedgerData } from "@/lib/data-service";
+import { formatCurrencyINR } from "@/lib/utils";
 import { LiveClock } from "@/components/layout/live-clock";
 
 type AdminDashboardPageProps = {
@@ -198,6 +199,9 @@ export default async function AdminDashboardPage({
                   <div className="h-1.5 bg-gray-50 rounded-full overflow-hidden">
                     <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${p.val}%`, background: p.color }}></div>
                   </div>
+                  <AdminBadge tone={entry.tone}>
+                    {entry.issue}
+                  </AdminBadge>
                 </div>
               ))}
             </div>
@@ -222,7 +226,7 @@ export default async function AdminDashboardPage({
                     <div className="text-xs font-bold text-gray-800 truncate">{entry.name}</div>
                     <div className="text-[10px] text-gray-400 font-medium truncate">{entry.info}</div>
                   </div>
-                  <div className={`shrink-0 whitespace-nowrap px-3 py-1 rounded-full text-[9px] font-bold tracking-tight uppercase ${entry.tone === 'danger' ? 'bg-rose-50 text-rose-600' : 'bg-amber-50 text-amber-600'
+                  <div className={`shrink-0 whitespace-nowrap px-3 py-1 rounded-full text-[9px] font-bold tracking-tight uppercase ${entry.tone === 'red' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'
                     }`}>
                     {entry.issue}
                   </div>
