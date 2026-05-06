@@ -45,7 +45,7 @@ export default async function RootLayout({
       lang={locale}
       className={`${notoSans.variable} ${notoSansGurmukhi.variable} ${notoSansMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col" suppressHydrationWarning>{children}</body>
     </html>
   );
 }
