@@ -13,13 +13,14 @@ export default async function AdminCustomersPage({
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: "admin.customers" });
+
   const [customers, areas] = await Promise.all([
     getCustomerListData(),
     getAreasData()
   ]);
 
   return (
-    <AdminShell locale={locale} title={t("title")} subtitle={t("subtitle")} hideHero={true}>
+    <AdminShell locale={locale} title={t("title")} subtitle={t("subtitle")}>
       <CustomerList customers={customers} areas={areas} locale={locale} />
     </AdminShell>
   );

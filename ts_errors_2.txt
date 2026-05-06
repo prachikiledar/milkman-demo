@@ -1,0 +1,7 @@
+src/app/[locale]/(admin)/admin/deliveries/page.tsx(50,9): error TS2322: Type '{ customerCode: string; customerName: string; quantityLabel: string; status: "PAUSED" | "DELIVERED" | "SKIPPED" | "PENDING"; deliveryInstruction: string; route: string; areaCode: string; ... 4 more ...; productItems: never[]; }[]' is not assignable to type 'DeliveryEntry[]'.
+  Type '{ customerCode: string; customerName: string; quantityLabel: string; status: "PAUSED" | "DELIVERED" | "SKIPPED" | "PENDING"; deliveryInstruction: string; route: string; areaCode: string; ... 4 more ...; productItems: never[]; }' is missing the following properties from type 'DeliveryEntry': baseQuantity, finalQuantity
+src/components/customers/customer-list-item.tsx(115,15): error TS2322: Type '((mode: "details" | "view" | "schedule") => void) | undefined' is not assignable to type '((mode: "details" | "view" | "edit") => void) | undefined'.
+  Type '(mode: "details" | "view" | "schedule") => void' is not assignable to type '(mode: "details" | "view" | "edit") => void'.
+    Types of parameters 'mode' and 'mode' are incompatible.
+      Type '"details" | "view" | "edit"' is not assignable to type '"details" | "view" | "schedule"'.
+        Type '"edit"' is not assignable to type '"details" | "view" | "schedule"'.

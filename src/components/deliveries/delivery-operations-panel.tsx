@@ -11,6 +11,7 @@ import {
   AdminInput,
   AdminSelect,
 } from "@/components/layout/admin-ui";
+import { AdminModal } from "@/components/layout/admin-modal";
 import { cn, formatCurrencyINR } from "@/lib/utils";
 
 type DeliveryStatus = "ALL" | "DELIVERED" | "SKIPPED" | "PAUSED" | "PENDING";
@@ -183,19 +184,17 @@ export function DeliveryOperationsPanel({
     currentStatus: string
   ) {
     const isTogglingOff = type === "RESET" || currentStatus === type;
-    const finalStatus = type === "EXTRA" ? "DELIVERED" : type;
+    const apiStatus = type === "EXTRA" ? "DELIVERED" : (type === "RESET" ? null : type) as "DELIVERED" | "SKIPPED" | "PAUSED" | null;
     setLoadingKey(`${customerCode}:${type}`);
 
     // Optimistic update
     setLocalEntries((prev) =>
       prev.map((entry) => {
         if (entry.customerCode !== customerCode) return entry;
-
-        if (type === "RESET") {
+        if (isTogglingOff) {
           return { ...entry, status: "PENDING" as const, actualQuantity: entry.defaultQuantity, extraQuantity: 0 };
         }
-
-        const statusToSet = isTogglingOff ? "PENDING" : (type === "EXTRA" ? "DELIVERED" : type);
+        const statusToSet = type === "EXTRA" ? "DELIVERED" : type;
         return { ...entry, status: statusToSet as any };
       })
     );
@@ -205,13 +204,14 @@ export function DeliveryOperationsPanel({
         await fetch(`/api/deliveries?customerCode=${customerCode}&date=${filters.date}`, {
           method: "DELETE",
         });
-      } else {
+      } else if (apiStatus) {
         const currentEntry = localEntries.find(e => e.customerCode === customerCode);
-        const body: any = {
+        const body = {
           customerCode,
-          status: finalStatus,
+          status: apiStatus,
           date: filters.date,
           actualQuantity: currentEntry?.actualQuantity ?? currentEntry?.defaultQuantity ?? 0,
+          extraQuantity: currentEntry?.extraQuantity || 0,
         };
 
         await fetch("/api/deliveries", {
@@ -234,9 +234,7 @@ export function DeliveryOperationsPanel({
     if (pending.length === 0) return;
 
     setLoadingKey("all:DELIVERED");
-
-    // Optimistic update
-    setLocalEntries(prev => prev.map(e => e.status === "PENDING" ? { ...e, status: "DELIVERED" } : e));
+    setLocalEntries(prev => prev.map(e => e.status === "PENDING" ? { ...e, status: "DELIVERED" as const } : e));
 
     try {
       await Promise.all(pending.map(e =>
@@ -247,7 +245,8 @@ export function DeliveryOperationsPanel({
             customerCode: e.customerCode,
             status: "DELIVERED",
             date: filters.date,
-            actualQuantity: e.actualQuantity || e.defaultQuantity || 0
+            actualQuantity: e.actualQuantity || e.defaultQuantity || 0,
+            extraQuantity: e.extraQuantity || 0,
           }),
         })
       ));
@@ -260,64 +259,116 @@ export function DeliveryOperationsPanel({
     }
   }
 
+  async function markAllUndelivered() {
+    const delivered = localEntries.filter(e => e.status === "DELIVERED");
+    if (delivered.length === 0) return;
+
+    setLoadingKey("all:UNDELIVERED");
+
+    // Optimistic update
+    setLocalEntries(prev => prev.map(e => e.status === "DELIVERED" ? { ...e, status: "PENDING" } : e));
+
+    try {
+      await Promise.all(delivered.map(e =>
+        fetch(`/api/deliveries?customerCode=${e.customerCode}&date=${filters.date || ""}`, {
+          method: "DELETE",
+        })
+      ));
+      router.refresh();
+    } catch (error) {
+      console.error(error);
+      setLocalEntries(entries);
+    } finally {
+      setLoadingKey(null);
+    }
+  }
+
   return (
-    <AdminCard className="space-y-6">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <Filter className="h-5 w-5 text-[var(--admin-primary-strong)]" />
-            <h2 className="text-xl font-bold text-[var(--admin-text)] tracking-tight">Delivery Run</h2>
+    <div className="space-y-6 max-w-[1400px] mx-auto">
+      {/* Premium Header */}
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between bg-white rounded-[24px] p-4 shadow-sm border border-gray-100 relative overflow-hidden">
+        {/* Subtle decorative background */}
+        <div className="absolute -right-10 -top-10 w-32 h-32 bg-[#22c55e]/10 rounded-full blur-2xl" />
+
+        <div className="relative z-10">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-[#dcfce7] flex items-center justify-center">
+              <Filter className="h-4 w-4 text-[#064e3b]" />
+            </div>
+            <h2 className="text-lg font-black text-gray-900 tracking-tight">Delivery Run</h2>
           </div>
-          <p className="mt-1 text-sm text-[var(--admin-muted)] font-medium">
-            {selectedAreaName} · <span className="text-[var(--admin-text)] font-bold">{counts.pending}</span> pending of {counts.total}
+          <p className="mt-2 text-sm text-gray-500 font-medium ml-13 flex items-center gap-2">
+            <span className="px-2.5 py-1 bg-gray-100 rounded-lg text-xs font-bold text-gray-700">{selectedAreaName}</span>
+            <span>·</span>
+            <span className="text-gray-900 font-bold">{counts.pending}</span> pending of {counts.total}
           </p>
         </div>
-        <div className="flex flex-col sm:flex-row gap-3">
-          <AdminButton
-            variant="secondary"
-            onClick={markAllDelivered}
-            disabled={counts.pending === 0 || loadingKey !== null}
-            className="w-full sm:w-auto"
+        <div className="flex flex-col sm:flex-row gap-3 relative z-10">
+          {counts.pending === 0 && counts.delivered > 0 ? (
+            <button
+              type="button"
+              onClick={markAllUndelivered}
+              disabled={loadingKey !== null}
+              className="w-full sm:w-auto px-4 py-2 rounded-xl bg-white border border-gray-200 text-xs font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:active:scale-100"
+            >
+              {loadingKey === "all:UNDELIVERED" ? "Processing..." : "Mark All Undelivered"}
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={markAllDelivered}
+              disabled={counts.pending === 0 || loadingKey !== null}
+              className="w-full sm:w-auto px-4 py-2 rounded-xl bg-white border border-gray-200 text-xs font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:active:scale-100"
+            >
+              {loadingKey === "all:DELIVERED" ? "Processing..." : "Mark All Delivered"}
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={openLocationSelector}
+            style={{ background: 'linear-gradient(to right, #064e3b, #166534)' }}
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-white text-xs font-black shadow-[0_4px_12px_rgba(6,78,59,0.3)] hover:shadow-[0_6px_16px_rgba(6,78,59,0.4)] transform hover:-translate-y-0.5 active:translate-y-0 transition-all"
           >
-            {loadingKey === "all:DELIVERED" ? "Processing..." : "Mark All Delivered"}
-          </AdminButton>
-          <AdminButton onClick={openLocationSelector} className="w-full sm:w-auto shadow-lg shadow-blue-100">
-            <Play className="h-4 w-4" />
+            <Play className="h-4 w-4 fill-white" />
             {filters.area ? "Change Route" : "Start Route"}
-          </AdminButton>
+          </button>
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3 bg-white/50 p-4 rounded-[24px] border border-[var(--admin-border)]">
-        <AdminField label="Date">
+      {/* Sleek Glassmorphic Filter Bar */}
+      <div className="grid gap-2 grid-cols-2 md:grid-cols-3 bg-white/60 backdrop-blur-xl p-3 rounded-[20px] border border-white/40 shadow-sm">
+        <div className="space-y-1.5">
+          <label className="text-[11px] font-black uppercase tracking-widest text-gray-400 pl-1">Date</label>
           <div className="relative">
-            <CalendarDays className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--admin-muted)]" />
-            <AdminInput
+            <CalendarDays className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <input
               type="date"
               value={filters.date}
               onChange={(event) => updateFilters({ date: event.target.value })}
-              className="pl-10 h-11 rounded-xl"
+              className="w-full pl-10 h-9 rounded-lg border-none bg-white shadow-sm text-xs font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#10b981]/20 transition-all [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
             />
           </div>
-        </AdminField>
-        <AdminField label="Status Filter">
-          <AdminSelect
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-[11px] font-black uppercase tracking-widest text-gray-400 pl-1">Status Filter</label>
+          <select
             value={filters.status}
             onChange={(event) => updateFilters({ status: event.target.value as DeliveryStatus })}
-            className="h-11 rounded-xl"
+            className="w-full px-3 h-9 rounded-lg border-none bg-white shadow-sm text-xs font-bold text-gray-700 outline-none focus:ring-2 focus:ring-green-500/20 transition-all appearance-none"
           >
             {statusOptions.map((status) => (
               <option key={status.value} value={status.value}>
                 {status.label}
               </option>
             ))}
-          </AdminSelect>
-        </AdminField>
-        <AdminField label="Route Selection">
-          <AdminSelect
+          </select>
+        </div>
+        <div className="space-y-1.5 col-span-2 md:col-span-1">
+          <label className="text-[11px] font-black uppercase tracking-widest text-gray-400 pl-1">Route Selection</label>
+          <select
             value={filters.area}
             onChange={(event) => updateFilters({ area: event.target.value })}
-            className="h-11 rounded-xl"
+            className="w-full px-3 h-9 rounded-lg border-none bg-white shadow-sm text-xs font-bold text-gray-700 outline-none focus:ring-2 focus:ring-green-500/20 transition-all appearance-none"
           >
             <option value="">All locations</option>
             {areas.map((area) => (
@@ -325,52 +376,64 @@ export function DeliveryOperationsPanel({
                 {typeof area.name === "string" ? area.name : (area.name[locale as keyof typeof area.name] || area.name.en)}
               </option>
             ))}
-          </AdminSelect>
-        </AdminField>
+          </select>
+        </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-4">
-        <div className="bg-emerald-50/50 border border-emerald-100 rounded-[22px] px-4 py-4">
-          <div className="flex items-center justify-between">
+      {/* Premium Dashboard Style Metrics */}
+      <div className="flex sm:grid sm:grid-cols-4 gap-3 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        {/* Delivered Card */}
+        <div className="min-w-[120px] w-[35vw] sm:w-auto shrink-0 snap-start bg-gradient-to-br from-[#ecfdf5] to-white border border-[#d1fae5] rounded-[20px] p-3 shadow-sm relative overflow-hidden group">
+          <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-[#d1fae5]/50 rounded-full blur-xl group-hover:bg-[#a7f3d0]/50 transition-all" />
+          <div className="flex items-center justify-between relative z-10">
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600">D</p>
-              <p className="mt-1 text-2xl font-black text-emerald-700">{counts.delivered}</p>
+              <p className="text-[9px] font-black uppercase tracking-widest text-[#059669] mb-1">Delivered</p>
+              <p className="text-xl font-black tracking-tighter text-[#064e3b]">{counts.delivered}</p>
             </div>
-            <div className="h-9 w-9 flex items-center justify-center rounded-xl bg-emerald-100/50 text-emerald-600">
-              <Check className="h-5 w-5 stroke-[3]" />
+            <div className="h-8 w-8 flex items-center justify-center rounded-xl bg-[#10b981] shadow-[0_2px_8px_rgba(16,185,129,0.3)] text-white transform group-hover:scale-105 transition-transform shrink-0">
+              <Check className="h-4 w-4 stroke-[3]" />
             </div>
           </div>
         </div>
-        <div className="bg-rose-50/50 border border-rose-100 rounded-[22px] px-4 py-4">
-          <div className="flex items-center justify-between">
+
+        {/* Skipped Card */}
+        <div className="min-w-[120px] w-[35vw] sm:w-auto shrink-0 snap-start bg-gradient-to-br from-[#fff1f2] to-white border border-[#ffe4e6] rounded-[20px] p-3 shadow-sm relative overflow-hidden group">
+          <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-[#ffe4e6]/50 rounded-full blur-xl group-hover:bg-[#fecdd3]/50 transition-all" />
+          <div className="flex items-center justify-between relative z-10">
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-rose-600">S</p>
-              <p className="mt-1 text-2xl font-black text-rose-700">{counts.skipped}</p>
+              <p className="text-[9px] font-black uppercase tracking-widest text-[#e11d48] mb-1">Skipped</p>
+              <p className="text-xl font-black tracking-tighter text-[#881337]">{counts.skipped}</p>
             </div>
-            <div className="h-9 w-9 flex items-center justify-center rounded-xl bg-rose-100/50 text-rose-600">
-              <X className="h-5 w-5 stroke-[3]" />
+            <div className="h-8 w-8 flex items-center justify-center rounded-xl bg-[#f43f5e] shadow-[0_2px_8px_rgba(244,63,94,0.3)] text-white transform group-hover:scale-105 transition-transform shrink-0">
+              <X className="h-4 w-4 stroke-[3]" />
             </div>
           </div>
         </div>
-        <div className="bg-amber-50/50 border border-amber-100 rounded-[22px] px-4 py-4">
-          <div className="flex items-center justify-between">
+
+        {/* Paused Card */}
+        <div className="min-w-[120px] w-[35vw] sm:w-auto shrink-0 snap-start bg-gradient-to-br from-[#fffbeb] to-white border border-[#fef3c7] rounded-[20px] p-3 shadow-sm relative overflow-hidden group">
+          <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-[#fef3c7]/50 rounded-full blur-xl group-hover:bg-[#fde68a]/50 transition-all" />
+          <div className="flex items-center justify-between relative z-10">
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-amber-600">P</p>
-              <p className="mt-1 text-2xl font-black text-amber-700">{counts.paused}</p>
+              <p className="text-[9px] font-black uppercase tracking-widest text-[#d97706] mb-1">Paused</p>
+              <p className="text-xl font-black tracking-tighter text-[#78350f]">{counts.paused}</p>
             </div>
-            <div className="h-9 w-9 flex items-center justify-center rounded-xl bg-amber-100/50 text-amber-600">
-              <Pause className="h-5 w-5 stroke-[3]" />
+            <div className="h-8 w-8 flex items-center justify-center rounded-xl bg-[#f59e0b] shadow-[0_2px_8px_rgba(245,158,11,0.3)] text-white transform group-hover:scale-105 transition-transform shrink-0">
+              <Pause className="h-4 w-4 stroke-[3]" />
             </div>
           </div>
         </div>
-        <div className="bg-blue-50/50 border border-blue-100 rounded-[22px] px-4 py-4">
-          <div className="flex items-center justify-between">
+
+        {/* Pending Card */}
+        <div className="min-w-[120px] w-[35vw] sm:w-auto shrink-0 snap-start bg-gradient-to-br from-[#064e3b] via-[#053e2f] to-[#021f16] border border-[#14532d]/50 rounded-[20px] p-3 shadow-lg shadow-[#14532d]/10 relative overflow-hidden group">
+          <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-[#4ade80]/20 rounded-full blur-xl group-hover:bg-[#4ade80]/30 transition-all" />
+          <div className="flex items-center justify-between relative z-10">
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-blue-600">Pending</p>
-              <p className="mt-1 text-2xl font-black text-blue-700">{counts.pending}</p>
+              <p className="text-[9px] font-black uppercase tracking-widest text-[#86efac] mb-1 drop-shadow-md">Pending</p>
+              <p className="text-xl font-black tracking-tighter text-white drop-shadow-lg">{counts.pending}</p>
             </div>
-            <div className="h-9 w-9 flex items-center justify-center rounded-xl bg-blue-100/50 text-blue-600">
-              <Clock className="h-5 w-5 stroke-[3]" />
+            <div className="h-8 w-8 flex items-center justify-center rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white transform group-hover:scale-105 transition-transform shadow-sm shrink-0">
+              <Clock className="h-4 w-4 stroke-[2.5]" />
             </div>
           </div>
         </div>
@@ -401,216 +464,216 @@ export function DeliveryOperationsPanel({
             <article
               key={task.customerCode}
               className={cn(
-                "admin-panel rounded-[24px] px-4 py-5 md:px-6 md:py-6 transition-all duration-300 border border-transparent",
-                isDelivered ? "bg-[#f0fdf4] border-emerald-100/50" : "bg-white hover:border-gray-200",
-                !isPending && "opacity-95 shadow-sm"
+                "bg-white rounded-[20px] p-3 sm:px-5 sm:py-4 transition-all duration-300 border mb-3 cursor-default hover:border-gray-200 hover:shadow-sm",
+                isDelivered ? "bg-gradient-to-r from-[#ecfdf5]/80 to-white border-[#d1fae5] hover:border-[#a7f3d0]" : "border-gray-100",
+                !isPending && "opacity-90 grayscale-[0.1]"
               )}
             >
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                {/* Info Section (Left) */}
-                <div className="flex-1 min-w-0 space-y-3">
-                  <div className="flex items-center gap-3">
-                    <div className={cn(
-                      "h-10 w-10 shrink-0 flex items-center justify-center rounded-2xl transition-colors",
-                      isDelivered ? "bg-emerald-100 text-emerald-600" :
-                        isSkipped ? "bg-rose-100 text-rose-600" :
-                          isPaused ? "bg-amber-100 text-amber-600" : "bg-blue-50 text-blue-600"
-                    )}>
-                      {isDelivered ? <Check className="h-5 w-5" /> :
-                        isSkipped ? <X className="h-5 w-5" /> :
-                          isPaused ? <Pause className="h-5 w-5" /> : <MapPin className="h-5 w-5" />}
-                    </div>
-                    <div className="min-w-0">
-                      <h2 className="truncate text-lg font-black text-[var(--admin-text)] tracking-tight">
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                
+                {/* User Info */}
+                <div className="flex items-center gap-4 min-w-0 md:w-[35%]">
+                  <div className={cn(
+                    "h-8 w-8 shrink-0 flex items-center justify-center rounded-xl transition-colors shadow-sm",
+                    isDelivered ? "bg-[#10b981] text-white shadow-[0_4px_12px_rgba(16,185,129,0.3)]" :
+                      isSkipped ? "bg-[#f43f5e] text-white shadow-[0_4px_12px_rgba(244,63,94,0.3)]" :
+                        isPaused ? "bg-[#f59e0b] text-white shadow-[0_4px_12px_rgba(245,158,11,0.3)]" : "bg-gray-100 text-gray-500"
+                  )}>
+                    {isDelivered ? <Check className="h-4 w-4 stroke-[3]" /> :
+                      isSkipped ? <X className="h-4 w-4 stroke-[3]" /> :
+                        isPaused ? <Pause className="h-4 w-4 stroke-[3]" /> : <MapPin className="h-4 w-4 stroke-[2.5]" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h2 className="truncate text-[13px] font-bold text-gray-900 tracking-tight">
                         {task.customerName}
                       </h2>
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                        📍 {task.route}
-                      </p>
-                    </div>
-                    <AdminBadge tone={getStatusTone(task.status)} className="text-[10px] font-black uppercase h-5 px-2 ml-auto md:ml-0">
-                      {task.status === "DELIVERED" ? "D" : task.status === "SKIPPED" ? "S" : task.status === "PAUSED" ? "P" : task.status}
-                    </AdminBadge>
-                  </div>
-                  
-                  <div className="flex flex-wrap items-center gap-2">
-                    {task.extraQuantity !== 0 && task.extraQuantity !== undefined && (
                       <span className={cn(
-                        "text-[10px] font-black px-1.5 py-0.5 rounded-full",
-                        (task.extraQuantity || 0) > 0 ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"
+                        "px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter shrink-0",
+                        isDelivered ? "bg-[#d1fae5] text-[#047857]" :
+                        isSkipped ? "bg-[#ffe4e6] text-[#be123c]" :
+                        isPaused ? "bg-[#fef3c7] text-[#b45309]" : "bg-gray-100 text-gray-600"
                       )}>
-                        {(task.extraQuantity || 0) > 0 ? "+" : ""}{(task.extraQuantity || 0).toFixed(1)}L
+                        {task.status}
                       </span>
-                    )}
-                    {task.deliveryInstruction && (
-                      <p className="text-[11px] font-medium text-[var(--admin-primary-strong)] italic">
-                        "{task.deliveryInstruction}"
-                      </p>
-                    )}
+                    </div>
+                    <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider truncate mt-1 block">
+                      📍 {task.route}
+                    </span>
                   </div>
                 </div>
 
-                {/* Controls Section (Right) */}
-                <div className="flex flex-col items-end gap-4 shrink-0">
-
-                  {/* Quantity Stepper */}
-                  <div className="flex items-center bg-gray-50 rounded-full p-1 border border-gray-100 shadow-sm w-full md:w-auto justify-between md:justify-start">
+                {/* Quantity Controls */}
+                <div className="flex justify-center md:justify-center md:w-[25%] mt-2 md:mt-0">
+                  <div className="flex items-center bg-gray-50/80 backdrop-blur-sm rounded-xl p-1 border border-gray-200 shadow-inner w-auto justify-center">
                     <button
                       type="button"
                       onClick={() => handleQuantityChange(task.customerCode, -0.5)}
                       disabled={(task.actualQuantity || 0) <= 0}
                       className={cn(
-                        "flex h-9 w-9 items-center justify-center rounded-full bg-white text-gray-500 shadow-sm border border-gray-100 hover:text-rose-500 transition-colors active:scale-90",
-                        (task.actualQuantity || 0) <= 0 && "opacity-30 cursor-not-allowed"
+                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-gray-600 shadow-sm border border-gray-100 hover:text-[#f43f5e] hover:border-[#ffe4e6] transition-all active:scale-90",
+                        (task.actualQuantity || 0) <= 0 && "opacity-40 cursor-not-allowed"
                       )}
                     >
                       <Minus className="h-3 w-3 stroke-[3]" />
                     </button>
-                    <div className="px-4 min-w-[70px] text-center">
-                      <span className="text-base font-black text-[var(--admin-text)]">
+                    <div className="px-3 min-w-[52px] shrink-0 text-center">
+                      <span className="text-sm font-black text-gray-900 tracking-tighter">
                         {(task.actualQuantity || 0).toFixed(1)}L
                       </span>
                     </div>
                     <button
                       type="button"
                       onClick={() => handleQuantityChange(task.customerCode, 0.5)}
-                      className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-gray-500 shadow-sm border border-gray-100 hover:text-emerald-500 transition-colors active:scale-90"
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-gray-600 shadow-sm border border-gray-100 hover:text-[#10b981] hover:border-[#d1fae5] transition-all active:scale-90"
                     >
                       <Plus className="h-3 w-3 stroke-[3]" />
                     </button>
                   </div>
+                </div>
 
-                  {/* Actions */}
-                  <div className="flex items-center gap-2 w-full md:w-auto">
+                {/* Instructions & Actions */}
+                <div className="flex items-center justify-end gap-2 shrink-0">
+                  {task.deliveryInstruction && (
+                    <div className="hidden xl:block max-w-[130px] mr-auto">
+                      <p className="text-[10px] font-bold text-[#064e3b] italic leading-tight bg-[#ecfdf5] px-2 py-1.5 rounded-lg truncate">
+                        "{task.deliveryInstruction}"
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-2 justify-end">
                     <button
                       type="button"
                       onClick={() => saveStatus(task.customerCode, isDelivered ? "RESET" : "DELIVERED", task.status)}
                       disabled={loadingKey !== null}
+                      style={isDelivered ? { backgroundColor: '#10b981', color: 'white' } : undefined}
                       className={cn(
-                        "flex-1 md:flex-none flex items-center justify-center gap-1.5 h-11 px-4 rounded-xl font-bold transition-all active:scale-95",
+                        "flex items-center justify-center gap-1 h-9 px-3 rounded-xl font-bold transition-all active:scale-95 text-[10px] uppercase tracking-widest",
                         isDelivered
-                          ? "bg-emerald-600 text-white shadow-lg shadow-emerald-100"
+                          ? "shadow-[0_4px_10px_rgba(16,185,129,0.3)]"
                           : cn(
-                            "bg-emerald-50 text-emerald-700 border border-emerald-100",
-                            !isPending && "opacity-40 grayscale-[0.5] hover:opacity-100 hover:grayscale-0"
+                            "bg-white border-2 border-[#d1fae5] text-[#10b981] hover:bg-[#ecfdf5] hover:border-[#a7f3d0]",
+                            !isPending && "opacity-50 grayscale hover:opacity-100 hover:grayscale-0"
                           )
                       )}
                     >
                       {loadingKey === `${task.customerCode}:DELIVERED` ? (
-                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                        <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
                       ) : (
-                        <Check className="h-4 w-4 stroke-[3]" />
+                        <>
+                          <Check className="h-3.5 w-3.5 stroke-[3]" />
+                          {isDelivered ? "Delivered" : "Deliver"}
+                        </>
                       )}
-                      <span className="text-[10px] uppercase tracking-widest hidden sm:inline">Deliver</span>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => saveStatus(task.customerCode, isSkipped ? "RESET" : "SKIPPED", task.status)}
                       disabled={loadingKey !== null}
+                      style={isSkipped ? { backgroundColor: '#f43f5e', color: 'white' } : undefined}
                       className={cn(
-                        "flex-1 md:flex-none flex items-center justify-center gap-1.5 h-11 px-4 rounded-xl font-bold transition-all active:scale-95",
+                        "flex h-9 w-9 items-center justify-center rounded-xl font-black transition-all active:scale-95 shrink-0",
                         isSkipped
-                          ? "bg-rose-600 text-white shadow-lg shadow-rose-100"
+                          ? "shadow-[0_4px_10px_rgba(244,63,94,0.3)]"
                           : cn(
-                            "bg-rose-50 text-rose-700 border border-rose-100",
-                            !isPending && "opacity-40 grayscale-[0.5] hover:opacity-100 hover:grayscale-0"
+                            "bg-white border-2 border-gray-100 text-gray-400 hover:bg-[#fff1f2] hover:border-[#ffe4e6] hover:text-[#e11d48]",
+                            !isPending && "opacity-50 grayscale hover:opacity-100 hover:grayscale-0"
                           )
                       )}
+                      aria-label="Skip"
                     >
                       {loadingKey === `${task.customerCode}:SKIPPED` ? (
-                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                        <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
                       ) : (
-                        <X className="h-4 w-4 stroke-[3]" />
+                        <X className="h-3.5 w-3.5 stroke-[3]" />
                       )}
-                      <span className="text-[10px] uppercase tracking-widest hidden sm:inline">Skip</span>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => saveStatus(task.customerCode, isPaused ? "RESET" : "PAUSED", task.status)}
                       disabled={loadingKey !== null}
+                      style={isPaused ? { backgroundColor: '#f59e0b', color: 'white' } : undefined}
                       className={cn(
-                        "flex-1 md:flex-none flex items-center justify-center gap-1.5 h-11 px-4 rounded-xl font-bold transition-all active:scale-95",
+                        "flex h-9 w-9 items-center justify-center rounded-xl font-black transition-all active:scale-95 shrink-0",
                         isPaused
-                          ? "bg-amber-500 text-white shadow-lg shadow-amber-100"
+                          ? "shadow-[0_4px_10px_rgba(245,158,11,0.3)]"
                           : cn(
-                            "bg-amber-50 text-amber-700 border border-amber-100",
-                            !isPending && "opacity-40 grayscale-[0.5] hover:opacity-100 hover:grayscale-0"
+                            "bg-white border-2 border-gray-100 text-gray-400 hover:bg-[#fffbeb] hover:border-[#fef3c7] hover:text-[#d97706]",
+                            !isPending && "opacity-50 grayscale hover:opacity-100 hover:grayscale-0"
                           )
                       )}
+                      aria-label="Pause"
                     >
                       {loadingKey === `${task.customerCode}:PAUSED` ? (
-                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                        <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
                       ) : (
-                        <Pause className="h-4 w-4 stroke-[3]" />
+                        <Pause className="h-3.5 w-3.5 stroke-[3]" />
                       )}
-                      <span className="text-[10px] uppercase tracking-widest hidden sm:inline">Pause</span>
                     </button>
                   </div>
                 </div>
               </div>
+              
+              {/* Mobile instruction view */}
+              {task.deliveryInstruction && (
+                <div className="xl:hidden mt-3 pt-3 border-t border-gray-50">
+                  <p className="text-[10px] font-bold text-[#064e3b] italic leading-tight bg-[#ecfdf5] px-2 py-1.5 rounded-lg inline-block">
+                    "{task.deliveryInstruction}"
+                  </p>
+                </div>
+              )}
             </article>
           );
         })}
       </div>
 
-      {isLocationOpen ? (
-        <div className="fixed inset-0 z-50 flex items-end bg-black/35 p-3 sm:items-center sm:justify-center">
-          <div className="admin-panel w-full max-w-lg rounded-[24px] p-5 shadow-2xl">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <h2 className="text-lg font-semibold text-[var(--admin-text)]">
-                  Select route location
-                </h2>
-                <p className="mt-1 text-sm text-[var(--admin-muted)]">
-                  Pick one area to load only its customers for the morning run.
-                </p>
-              </div>
-              <button
-                type="button"
-                className="admin-secondary-button h-9 w-9 p-0"
-                onClick={() => setIsLocationOpen(false)}
-                aria-label="Close location selector"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
+      <AdminModal
+        isOpen={isLocationOpen}
+        onClose={() => setIsLocationOpen(false)}
+        title="Select Route"
+      >
+        <div className="grid gap-3">
+          <p className="text-sm text-gray-500 font-medium mb-2">
+            Pick an area to load its customers for the morning run.
+          </p>
 
-            <div className="mt-4 grid max-h-[52vh] gap-2 overflow-y-auto pr-1">
-              {isLoadingLocations ? (
-                <div className="admin-panel-muted rounded-[16px] px-4 py-3 text-sm text-[var(--admin-muted)]">
-                  Loading locations...
-                </div>
-              ) : null}
-              {locationError ? (
-                <div className="rounded-[16px] border border-[var(--admin-border)] bg-white px-4 py-3 text-sm text-[var(--admin-muted)]">
-                  {locationError}
-                </div>
-              ) : null}
-              <button
-                type="button"
-                className="admin-secondary-button justify-between px-4 py-3 text-left text-sm font-semibold"
-                onClick={() => selectLocation("")}
-              >
-                <span>All locations</span>
-                <MapPin className="h-4 w-4" />
-              </button>
-              {locationOptions.map((area) => (
-                <button
-                  key={area.code}
-                  type="button"
-                  className="admin-secondary-button justify-between px-4 py-3 text-left text-sm font-semibold"
-                  onClick={() => selectLocation(area.code)}
-                >
-                  <span>{typeof area.name === "string" ? area.name : (area.name[locale as keyof typeof area.name] || area.name.en)}</span>
-                  <MapPin className="h-4 w-4" />
-                </button>
-              ))}
+          {isLoadingLocations && (
+            <div className="rounded-[16px] px-5 py-4 text-sm font-bold text-gray-500 bg-gray-50 text-center animate-pulse">
+              Loading locations...
             </div>
-          </div>
+          )}
+          
+          {locationError && (
+            <div className="rounded-[16px] bg-rose-50 px-5 py-4 text-sm font-bold text-rose-600">
+              {locationError}
+            </div>
+          )}
+          
+          <button
+            type="button"
+            className="flex items-center justify-between px-5 py-4 rounded-[16px] bg-white border border-gray-100 hover:bg-gray-50 text-left text-sm font-black text-gray-700 transition-colors group"
+            onClick={() => selectLocation("")}
+          >
+            <span>All locations</span>
+            <MapPin className="h-5 w-5 text-gray-400 group-hover:text-gray-600 transition-colors" />
+          </button>
+
+          {locationOptions.map((area) => (
+            <button
+              key={area.code}
+              type="button"
+              className="flex items-center justify-between px-5 py-4 rounded-[16px] bg-white border border-gray-100 hover:bg-gray-50 text-left text-sm font-black text-gray-700 transition-colors group"
+              onClick={() => selectLocation(area.code)}
+            >
+              <span>{typeof area.name === "string" ? area.name : (area.name[locale as keyof typeof area.name] || area.name.en)}</span>
+              <MapPin className="h-5 w-5 text-gray-400 group-hover:text-gray-600 transition-colors" />
+            </button>
+          ))}
         </div>
-      ) : null}
-    </AdminCard>
+      </AdminModal>
+    </div >
   );
 }

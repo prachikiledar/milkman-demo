@@ -80,8 +80,10 @@ export function BillingDashboard({ locale, translations, data }: BillingDashboar
       locale={locale} 
       title={translations.title} 
       subtitle={translations.subtitle}
-      search={searchBar}
     >
+      {/* Search bar */}
+      <div className="mb-4">{searchBar}</div>
+
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
         <AdminStatCard
           label={translations.stats.billed}
